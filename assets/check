@@ -20,7 +20,6 @@ configure_git_ssl_verification $payload
 configure_credentials $payload
 
 uri=$(jq -r '.source.uri // ""' < $payload)
-branch=$(jq -r '.source.branch // ""' < $payload)
 ref=$(jq -r '.version.ref // ""' < $payload)
 
 destination=$TMPDIR/git-resource-repo-cache
@@ -30,26 +29,14 @@ if [ -d $destination ]; then
   git fetch
   git reset --hard FETCH_HEAD
 else
-  branchflag=""
-  if [ -n "$branch" ]; then
-    branchflag="--branch $branch"
-  fi
-
-  git clone --single-branch $uri $branchflag $destination
+  git clone $uri $destination
   cd $destination
 fi
 
-if [ -n "$ref" ] && git cat-file -e "$ref"; then
-  init_commit=$(git rev-list --max-parents=0 HEAD)
-  if [ "${ref}" = "${init_commit}" ]; then
-    log_range="--reverse HEAD"
-  else
-    log_range="--reverse ${ref}~1..HEAD"
-  fi
-else
-  log_range="-1"
-fi
+new_ref=$(git branch | sed '/master/d' | sed -e 's/^ *//g;s/ *$//g' | xargs)
 
-  {
-    git log --format='%H' $log_range
-  } | jq -R '.' | jq -s "map({ref: .})" >&3
+if [ "${ref}" = "${new_ref}" ]; then
+    echo '[{ "ref": "'ref'" }]' >&3
+else
+    echo '[{ "ref": "'$ref'" }, { "ref": "'$new_ref'" }]' >&3
+fi
