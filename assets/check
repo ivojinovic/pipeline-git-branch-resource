@@ -36,7 +36,7 @@ fi
 new_ref=$(git branch | sed '/master/d' | sed -e 's/^ *//g;s/ *$//g' | xargs)
 
 if [ "${ref}" = "${new_ref}" ]; then
-    echo '[{ "ref": "'ref'" }]' >&3
+    echo '[{ "ref": "'$ref'" }]' >&3
 else
     echo '[{ "ref": "'$ref'" }, { "ref": "'$new_ref'" }]' >&3
 fi
