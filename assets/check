@@ -21,14 +21,7 @@ configure_credentials $payload
 
 uri=$(jq -r '.source.uri // ""' < $payload)
 branch=$(jq -r '.source.branch // ""' < $payload)
-paths="$(jq -r '(.source.paths // ["."])[]' < $payload)" # those "'s are important
-ignore_paths="$(jq -r '":!" + (.source.ignore_paths // [])[]' < $payload)" # these ones too
-tag_filter=$(jq -r '.source.tag_filter // ""' < $payload)
-git_config_payload=$(jq -r '.source.git_config // []' < $payload)
 ref=$(jq -r '.version.ref // ""' < $payload)
-skip_ci_disabled=$(jq -r '.source.disable_ci_skip // false' < $payload)
-
-configure_git_global "${git_config_payload}"
 
 destination=$TMPDIR/git-resource-repo-cache
 
@@ -57,27 +50,6 @@ else
   log_range="-1"
 fi
 
-if [ $paths = '.' ] && [ -z $ignore_paths ]; then
-  paths_search=""
-else
-  paths_search="-- $paths $ignore_paths"
-fi
-
-ci_skip=""
-if [ "$skip_ci_disabled" != "true" ]; then
-  ci_skip="--grep \\[ci\sskip\\] --invert-grep"
-fi
-
-if [ -n "$tag_filter" ]; then
   {
-    if [ -n "$ref" ]; then
-      git tag --list "$tag_filter" --sort=creatordate --contains $ref
-    else
-      git tag --list "$tag_filter" --sort=creatordate | tail -1
-    fi
+    git log --format='%H' $log_range
   } | jq -R '.' | jq -s "map({ref: .})" >&3
-else
-  {
-    git log $ci_skip --format='%H' $log_range $paths_search
-  } | jq -R '.' | jq -s "map({ref: .})" >&3
-fi
