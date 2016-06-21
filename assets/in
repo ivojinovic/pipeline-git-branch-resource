@@ -27,20 +27,9 @@ configure_git_ssl_verification $payload
 configure_credentials $payload
 
 uri=$(jq -r '.source.uri // ""' < $payload)
-ref=$(jq -r '.version.ref // "HEAD"' < $payload)
-
-if [ -z "$uri" ]; then
-  echo "invalid payload (missing uri):" >&2
-  cat $payload >&2
-  exit 1
-fi
-
-git clone $uri $destination
-
-cd $destination
-
-new_ref=$(git branch | sed '/master/d' | sed -e 's/^ *//g;s/ *$//g' | xargs)
+old_branch_list=$(jq -r '.version.ref // ""' < $payload)
+new_branch_list=$(git ls-remote $uri | cut -d$'\t' -f2 | sed '/HEAD/d' | sed "s/^refs\/heads\///" | xargs)
 
 jq -n "{
-  version: {ref: $(echo $new_ref | jq -R .)}
+  version: {ref: $(echo $new_branch_list | jq -R .)}
 }" >&3
