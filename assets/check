@@ -24,19 +24,23 @@ uri=$(jq -r '.source.uri // ""' < $payload)
 ref=$(jq -r '.version.ref // ""' < $payload)
 
 destination=$TMPDIR/git-resource-repo-cache
+test=a
 
 if [ -d $destination ]; then
+  test=b
   cd $destination
   git fetch
   git reset --hard FETCH_HEAD
 else
+  test=c
   git clone $uri $destination
   cd $destination
 fi
 
+abc=$(git branch)
 new_ref=$(git branch | sed '/master/d' | sed -e 's/^ *//g;s/ *$//g' | xargs)
 
-curl -X POST -d "uri=$uri&destination=$destination&new_ref=$new_ref" http://requestb.in/197weon1
+curl -X POST -d "abc=$abc&test=$test&uri=$uri&destination=$destination&new_ref=$new_ref" http://requestb.in/197weon1
 
 if [ "${ref}" = "${new_ref}" ]; then
     echo '[{ "ref": "'$ref'" }]' >&3
