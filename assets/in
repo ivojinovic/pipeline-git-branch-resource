@@ -39,6 +39,8 @@ git clone $uri $destination
 
 cd $destination
 
+new_ref=$(git branch | sed '/master/d' | sed -e 's/^ *//g;s/ *$//g' | xargs)
+
 jq -n "{
-  version: {ref: $ref}
+  version: {ref: $(echo $new_ref | jq -R .)}
 }" >&3
