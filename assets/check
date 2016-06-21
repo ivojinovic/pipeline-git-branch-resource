@@ -2,7 +2,6 @@
 # vim: set ft=sh
 
 set -e
-set -x
 
 exec 3>&1 # make stdout available as fd 3 for the result
 exec 1>&2 # redirect all output to stderr for logging
@@ -21,29 +20,24 @@ configure_git_ssl_verification $payload
 configure_credentials $payload
 
 uri=$(jq -r '.source.uri // ""' < $payload)
-ref=$(jq -r '.version.ref // ""' < $payload)
+old_branch_list=$(jq -r '.version.ref // ""' < $payload)
 
 destination=$TMPDIR/git-resource-repo-cache
-test=a
 
 if [ -d $destination ]; then
-  test=b
   cd $destination
   git fetch
   git reset --hard FETCH_HEAD
 else
-  test=c
   git clone $uri $destination
   cd $destination
 fi
 
-abc=$(git branch -a)
-new_ref=$(git branch -a | sed '/master/d' | sed -e 's/^ *//g;s/ *$//g' | xargs)
+new_branch_list=$(git branch -a | sed '/master/d' | sed -e 's/^ *//g;s/ *$//g' | xargs)
 
-curl -X POST -d "abc=$abc&test=$test&uri=$uri&destination=$destination&new_ref=$new_ref" http://requestb.in/197weon1
 
-if [ "${ref}" = "${new_ref}" ]; then
-    echo '[{ "ref": "'$ref'" }]' >&3
+if [ "${ref}" = "${new_branch_list}" ]; then
+    echo '[{ "ref": "'$old_branch_list'" }]' >&3
 else
-    echo '[{ "ref": "'$ref'" }, { "ref": "'$new_ref'" }]' >&3
+    echo '[{ "ref": "'$old_branch_list'" }, { "ref": "'$new_branch_list'" }]' >&3
 fi
