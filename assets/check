@@ -21,20 +21,7 @@ configure_credentials $payload
 
 uri=$(jq -r '.source.uri // ""' < $payload)
 old_branch_list=$(jq -r '.version.ref // ""' < $payload)
-
-destination=$TMPDIR/git-resource-repo-cache
-
-if [ -d $destination ]; then
-  cd $destination
-  git fetch
-  git reset --hard FETCH_HEAD
-else
-  git clone $uri $destination
-  cd $destination
-fi
-
-new_branch_list=$(git branch -a | sed '/master/d' | sed -e 's/^ *//g;s/ *$//g' | xargs)
-
+new_branch_list=$(git ls-remote $uri | cut -d$'\t' -f2 | sed '/HEAD/d' | sed "s/^refs\/heads\///" | xargs)
 
 if [ "${ref}" = "${new_branch_list}" ]; then
     echo '[{ "ref": "'$old_branch_list'" }]' >&3
