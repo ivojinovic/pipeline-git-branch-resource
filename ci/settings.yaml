@@ -1,8 +1,0 @@
----
-meta:
-  name:           branch_watch
-  target:         savannah
-  url:            http://192.168.72.209
-
-  git:
-    uri:          ssh://git@stash.zipcar.com:7999/cheet/pipeline-test-app.git

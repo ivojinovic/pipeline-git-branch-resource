@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-spruce merge pipeline.yaml settings.yaml credentials.yaml > deploy.yaml
+spruce merge pipeline.yaml credentials.yaml > deploy.yaml
 # fly -t savannah destroy-pipeline -p branch_watch
 fly -t savannah set-pipeline -p branch_watch -c deploy.yaml
