@@ -2,7 +2,6 @@ FROM concourse/buildroot:git
 
 ADD assets/ /opt/resource/
 ADD ci/project_pipeline/ /opt/resource/
-ADD ci/project_pipeline.yaml /opt/resource/project_pipeline.yaml
 RUN chmod +x /opt/resource/*
 
 ADD fly-lynux-1.3.1 /usr/local/bin/fly
