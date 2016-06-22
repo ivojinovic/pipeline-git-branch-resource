@@ -26,7 +26,7 @@ load_pubkey $payload
 configure_git_ssl_verification $payload
 configure_credentials $payload
 
-uri=$(jq -r '.source.uri // ""' < $payload)
+uri=$(jq -r '.source.project_git_uri // ""' < $payload)
 old_branch_list=$(jq -r '.version.ref // ""' < $payload)
 new_branch_list=$(git ls-remote $uri | cut -d$'\t' -f2 | sed '/HEAD/d' | sed "s/^refs\/heads\///" | xargs)
 
