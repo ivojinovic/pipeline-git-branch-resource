@@ -40,7 +40,7 @@ project_name=$(jq -r '.source.project_name // ""' < $payload)
 echo -e "$concourse_username\n$concourse_password\n" | fly -t savannah login --concourse-url $concourse_url
 
 export GIT_KEY=$git_key
-spruce merge project_pipeline.yaml > project_deploy.yaml
+spruce merge /opt/resource/project_pipeline.yaml > project_deploy.yaml
 fly -t savannah set-pipeline -p $project_name -c project_deploy.yaml
 
 jq -n "{
