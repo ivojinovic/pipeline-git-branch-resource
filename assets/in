@@ -48,7 +48,7 @@ export PROJECT_DOCKER_REPO=$project_docker_repo
 export PROJECT_NAME=$project_name
 export PIPELINE_NAME=$project_pipeline
 
-./opt/resource/build.sh /opt/resource/pipeline_start.yaml /opt/resource/pipeline_resources.yaml /opt/resource/pipeline_jobs.yaml merge.yaml $new_branch_list
+/opt/resource/build.sh /opt/resource/pipeline_start.yaml /opt/resource/pipeline_resources.yaml /opt/resource/pipeline_jobs.yaml merge.yaml $new_branch_list
 spruce merge merge.yaml > deploy.yaml
 sed -i.bak 's/|-/|/g' deploy.yaml
 
