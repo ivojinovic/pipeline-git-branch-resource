@@ -1,0 +1,46 @@
+---
+meta:
+  name:           (( param "Name your pipeline" ))
+
+  git:
+    uri:          (( param "Specify git repository URI for your app" ))
+    private_key:  (( param "Specify git repository private key" ))
+
+resource_types:
+
+- name: pipeline-git-branch-resource-type
+  type: docker-image
+  source:
+    repository: ivanvojinovic/pipeline-git-branch-resource
+    tag: v1.2
+
+resources:
+
+- name:         pipeline-git-branch-resource
+  type:         pipeline-git-branch-resource-type
+  source:
+    uri:          (( grab meta.git.uri ))
+    private_key:  (( grab meta.git.private_key ))
+    branch:       pipeline-git-branch-resource
+
+jobs:
+- name: done-job
+  plan:
+  - get: pipeline-git-branch-resource
+    trigger: true
+  - task: done-task
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker.zipcar.io:443/cheetah_ruby
+          tag: ruby23
+      inputs:
+      - name: pipeline-git-branch-resource
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          env
