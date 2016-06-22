@@ -1,3 +1,7 @@
 ci/credentials.yaml
 ci/deploy.yaml
-ci/project_deploy.yaml
+
+ci/project_pipeline/git_key
+ci/project_pipeline/deploy.yaml
+ci/project_pipeline/deploy.yaml.bak
+ci/project_pipeline/merge.yaml

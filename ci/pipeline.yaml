@@ -8,8 +8,10 @@ meta:
 
   project:
     name:             (( param "Specify the name of the project" ))
+    pipeline:         (( param "Specify the name of the pipeline" ))
     git_uri:          (( param "Specify git repository URI for your app" ))
     git_key:          (( param "Specify git repository private key" ))
+    docker_repo:      (( param "Specify docker repository" ))
 
 resource_types:
 
@@ -17,19 +19,21 @@ resource_types:
   type: docker-image
   source:
     repository: ivanvojinovic/pipeline-git-branch-resource
-    tag: v2.2
+    tag: v2.3
 
 resources:
 
 - name:         pipeline-git-branch-resource
   type:         pipeline-git-branch-resource-type
   source:
-    project_name:       (( grab meta.project.name ))
-    project_git_uri:    (( grab meta.project.git_uri ))
-    project_git_key:    (( grab meta.project.git_key ))
-    concourse_url:      (( grab meta.concourse.url ))
-    concourse_username: (( grab meta.concourse.username ))
-    concourse_password: (( grab meta.concourse.password ))
+    project_name:         (( grab meta.project.name ))
+    project_pipeline:     (( grab meta.project.pipeline ))
+    project_git_uri:      (( grab meta.project.git_uri ))
+    project_git_key:      (( grab meta.project.git_key ))
+    project_docker_repo:  (( grab meta.project.docker_repo ))
+    concourse_url:        (( grab meta.concourse.url ))
+    concourse_username:   (( grab meta.concourse.username ))
+    concourse_password:   (( grab meta.concourse.password ))
 
 jobs:
 - name: done-job

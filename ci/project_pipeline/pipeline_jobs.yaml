@@ -1,40 +1,6 @@
-groups: []
-
-resources:
-
-- name: cheetah_ruby
-  type: docker-image
-  source:
-    repository: docker.zipcar.io:443/cheetah_ruby
-    tag: ruby23
-
-- name: git-app-master-branch
-  type: git-multibranch
-  source:
-    branch: master
-    private_key: (( grab $GIT_KEY ))
-    uri: ssh://git@stash.zipcar.com:7999/cheet/pipeline-test-app.git
-
-- name: docker-app-master-build
-  type: docker-image
-  source:
-    insecure_registries:
-    - docker.zipcar.io
-    repository: docker.zipcar.io/app/pipeline_test_app
-
-resource_types:
-
-- name: git-multibranch
-  type: docker-image
-  source:
-    repository: cfcommunity/git-multibranch-resource
-    tag: edge
-
-jobs:
-
 - name: isolation-tests-master-branch
   plan:
-  - get: git-app-master-branch
+  - get: master-branch
     trigger: true
   - task: isolation-tests-task
     config:
@@ -49,7 +15,7 @@ jobs:
         args: []
         dir: ""
       inputs:
-      - name: git-app-master-branch
+      - name: master-branch
         path: cheetah
 
 - name: build-master-branch
@@ -58,7 +24,7 @@ jobs:
   plan:
   - get: cheetah_ruby
     trigger: true
-  - get: git-app-master-branch
+  - get: master-branch
     passed:
     - isolation-tests-master-branch
     trigger: true
@@ -71,7 +37,7 @@ jobs:
           repository: docker.zipcar.io:443/cheetah_ruby
           tag: ruby23
       params:
-        APP_NAME: pipeline_test_app
+        APP_NAME: (( grab $PROJECT_NAME ))
         GET_TAG_OUTPUT_DIR: get-tag-outputs
         REDIS_HOST: 192.168.72.226
       run:
@@ -79,12 +45,12 @@ jobs:
         args: []
         dir: ""
       inputs:
-      - name: git-app-master-branch
+      - name: master-branch
         path: cheetah
       outputs:
       - name: get-tag-outputs
         path: ""
-  - put: docker-app-master-build
+  - put: master-build
     params:
-      build: git-app-master-branch
+      build: master-branch
       tag: get-tag-outputs/tag

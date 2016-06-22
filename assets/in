@@ -26,22 +26,33 @@ load_pubkey $payload
 configure_git_ssl_verification $payload
 configure_credentials $payload
 
-uri=$(jq -r '.source.project_git_uri // ""' < $payload)
+project_git_uri=$(jq -r '.source.project_git_uri // ""' < $payload)
+project_docker_repo=$(jq -r '.source.project_docker_repo // ""' < $payload)
 git_key=$(jq -r '.source.project_git_key // ""' < $payload)
 old_branch_list=$(jq -r '.version.ref // ""' < $payload)
 
-new_branch_list=$(git ls-remote $uri | cut -d$'\t' -f2 | sed '/HEAD/d' | sed "s/^refs\/heads\///" | xargs)
+new_branch_list=$(git ls-remote $project_git_uri | cut -d$'\t' -f2 | sed '/HEAD/d' | sed "s/^refs\/heads\///" | xargs)
 
 concourse_url=$(jq -r '.source.concourse_url // ""' < $payload)
 concourse_username=$(jq -r '.source.concourse_username // ""' < $payload)
 concourse_password=$(jq -r '.source.concourse_password // ""' < $payload)
 project_name=$(jq -r '.source.project_name // ""' < $payload)
+project_pipeline=$(jq -r '.source.project_pipeline // ""' < $payload)
 
 echo -e "$concourse_username\n$concourse_password\n" | fly -t savannah login --concourse-url $concourse_url
 
+# spruce needs these in env vars
 export GIT_KEY=$git_key
-spruce merge /opt/resource/project_pipeline.yaml > project_deploy.yaml
-echo y | fly -t savannah set-pipeline -p $project_name -c project_deploy.yaml
+export PROJECT_GIT_URI=$project_git_uri
+export PROJECT_DOCKER_REPO=$project_docker_repo
+export PROJECT_NAME=$project_name
+export PIPELINE_NAME=$project_pipeline
+
+./opt/resource/build.sh /opt/resource/pipeline_start.yaml /opt/resource/pipeline_resources.yaml /opt/resource/pipeline_jobs.yaml merge.yaml $new_branch_list
+spruce merge merge.yaml > deploy.yaml
+sed -i.bak 's/|-/|/g' deploy.yaml
+
+echo y | fly -t savannah set-pipeline -p $PIPELINE_NAME -c deploy.yaml
 
 jq -n "{
   version: {ref: $(echo $new_branch_list | jq -R .)}
