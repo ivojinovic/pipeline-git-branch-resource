@@ -1,0 +1,90 @@
+groups: []
+
+resources:
+
+- name: cheetah_ruby
+  type: docker-image
+  source:
+    repository: docker.zipcar.io:443/cheetah_ruby
+    tag: ruby23
+
+- name: git-app-master-branch
+  type: git-multibranch
+  source:
+    branch: master
+    private_key: (( grab $GIT_KEY ))
+    uri: ssh://git@stash.zipcar.com:7999/cheet/pipeline-test-app.git
+
+- name: docker-app-master-build
+  type: docker-image
+  source:
+    insecure_registries:
+    - docker.zipcar.io
+    repository: docker.zipcar.io/app/pipeline_test_app
+
+resource_types:
+
+- name: git-multibranch
+  type: docker-image
+  source:
+    repository: cfcommunity/git-multibranch-resource
+    tag: edge
+
+jobs:
+
+- name: isolation-tests-master-branch
+  plan:
+  - get: git-app-master-branch
+    trigger: true
+  - task: isolation-tests-task
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker.zipcar.io:443/cheetah_ruby
+          tag: ruby23
+      run:
+        path: cheetah/ci/scripts/isolation_tests.sh
+        args: []
+        dir: ""
+      inputs:
+      - name: git-app-master-branch
+        path: cheetah
+
+- name: build-master-branch
+  public: true
+  serial: true
+  plan:
+  - get: cheetah_ruby
+    trigger: true
+  - get: git-app-master-branch
+    passed:
+    - isolation-tests-master-branch
+    trigger: true
+  - task: get-tag
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: docker.zipcar.io:443/cheetah_ruby
+          tag: ruby23
+      params:
+        APP_NAME: pipeline_test_app
+        GET_TAG_OUTPUT_DIR: get-tag-outputs
+        REDIS_HOST: 192.168.72.226
+      run:
+        path: cheetah/ci/scripts/get_tag.sh
+        args: []
+        dir: ""
+      inputs:
+      - name: git-app-master-branch
+        path: cheetah
+      outputs:
+      - name: get-tag-outputs
+        path: ""
+  - put: docker-app-master-build
+    params:
+      build: git-app-master-branch
+      tag: get-tag-outputs/tag
