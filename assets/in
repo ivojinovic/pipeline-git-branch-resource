@@ -31,7 +31,7 @@ project_docker_repo=$(jq -r '.source.project_docker_repo // ""' < $payload)
 git_key=$(jq -r '.source.project_git_key // ""' < $payload)
 old_branch_list=$(jq -r '.version.ref // ""' < $payload)
 
-new_branch_list=$(git ls-remote $project_git_uri | cut -d$'\t' -f2 | sed '/HEAD/d' | sed '/master/d' | sed "s/^refs\/heads\///" | xargs)
+new_branch_list=$(git ls-remote $project_git_uri | cut -d$'\t' -f2 | sed '/HEAD/d' | sed '/master/d' | sed '/jungle/d' | sed '/JUNGLE/d'  | sed '/pull-requests/d' | sed "s/^refs\/heads\///" | xargs)
 
 concourse_url=$(jq -r '.source.concourse_url // ""' < $payload)
 concourse_username=$(jq -r '.source.concourse_username // ""' < $payload)
