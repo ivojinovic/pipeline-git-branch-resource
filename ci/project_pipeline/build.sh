@@ -15,7 +15,8 @@ for var in "$@"
 do
     count=`expr $count + 1`
     if [ "$count" -gt "4" ] ; then
-        sed 's~master~'"$var"'~g' $p_resources_file >> $merge_file
+        NOSLASH=`echo $var | sed -e "s/\//-/g"`
+        sed 's~name: master~name: '"$NOSLASH"'~g;s~branch: master~branch: '"$var"'~g' $p_resources_file >> $merge_file
         printf "\n" >> $merge_file
     fi
 done
@@ -31,7 +32,8 @@ for var in "$@"
 do
     count=`expr $count + 1`
     if [ "$count" -gt "4" ] ; then
-        sed 's~master~'"$var"'~g' $p_jobs_file >> $merge_file
+        NOSLASH=`echo $var | sed -e "s/\//-/g"`
+        sed 's~master~'"$NOSLASH"'~g' $p_jobs_file >> $merge_file
         printf "\n" >> $merge_file
     fi
 done

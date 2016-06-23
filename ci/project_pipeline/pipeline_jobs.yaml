@@ -1,4 +1,4 @@
-- name: isolation-tests-master-branch
+- name: master-isolation-tests
   plan:
   - get: master-branch
     trigger: true
@@ -18,7 +18,7 @@
       - name: master-branch
         path: cheetah
 
-- name: build-master-branch
+- name: master-build
   public: true
   serial: true
   plan:
@@ -26,7 +26,7 @@
     trigger: true
   - get: master-branch
     passed:
-    - isolation-tests-master-branch
+    - master-isolation-tests
     trigger: true
   - task: get-tag
     config:
