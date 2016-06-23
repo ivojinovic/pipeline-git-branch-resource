@@ -7,7 +7,13 @@ export PROJECT_DOCKER_REPO=docker.zipcar.io/app/pipeline_test_app
 export PROJECT_NAME=pipeline_test_app
 export PIPELINE_NAME=pta_branches
 
-new_branch_list=$(git ls-remote $PROJECT_GIT_URI | cut -d$'\t' -f2 | sed '/HEAD/d' | sed '/master/d' | sed '/jungle/d' | sed '/JUNGLE/d'  | sed '/pull-requests/d' | sed "s/^refs\/heads\///" | xargs)
+this_dir=`pwd`
+
+cd ~/git/pipeline-test-app
+
+new_branch_list=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
+
+cd $this_dir
 
 # clean up
 #rm deploy.yaml
