@@ -9,16 +9,24 @@ fly -t savannah get-pipeline -p jarvis_api > original_pipeline.yaml
 # Creating "master only" pipeline
 spruce json original_pipeline.yaml | jq '{"jobs": [.["jobs"][] | select(.name | contains("master"))], "resource_types": .["resource_types"], "resources": .["resources"]}' | json2yaml > master_pipeline.yaml
 
+echo "Start with master"
+spruce merge master_pipeline.yaml > branches_pipeline.yaml
+
 # Go through each branch name passed in
-first=true
+count=1
+page_count=0
+file_is_blank=false
 for var in "$@"
 do
-    # first, add the "master only" pipeline
-    if [ $first == true ] ; then
-        echo "Start with master"
-        spruce merge master_pipeline.yaml > branches_pipeline.yaml
+    if [ "$count" -eq "5" ] ; then
+        echo "Break"
+        page_count=`expr $page_count + 1`
+        echo "Creating pipeline jarvis_api_branches_p$page_count"
+        fly -t savannah set-pipeline -p jarvis_api_branches_p$page_count -c branches_pipeline.yaml
+        rm branches_pipeline.yaml
+        count=0
+        file_is_blank=true
     fi
-    first=false
 
     # create a branch copy of the "master only", and in this copy, replace all references to master with references to a branch
     # BUT ... prevent any ignore_branches: master from getting overwritten
@@ -29,8 +37,15 @@ do
     printf "\n" >> $branch_name_unslashed.yaml
 
     # now add it
-    echo "Add $branch_name_unslashed"
-    spruce merge branches_pipeline.yaml $branch_name_unslashed.yaml >> branches_pipeline.yaml
+    if [ $file_is_blank == true ] ; then
+        echo "New Page with $branch_name_unslashed"
+        spruce merge $branch_name_unslashed.yaml > branches_pipeline.yaml
+        file_is_blank=false
+    else
+        echo "Adding Branch $branch_name_unslashed"
+        spruce merge branches_pipeline.yaml $branch_name_unslashed.yaml >> branches_pipeline.yaml
+    fi
+    count=`expr $count + 1`
 
     rm $branch_name_unslashed.yaml
     rm working_copy1.yaml
@@ -41,7 +56,9 @@ rm original_pipeline.yaml
 rm master_pipeline.yaml
 
 # set the branches version
-fly -t savannah set-pipeline -p jarvis_api_branches -c branches_pipeline.yaml
+page_count=`expr $page_count + 1`
+echo "Creating pipeline jarvis_api_branches_p$page_count"
+fly -t savannah set-pipeline -p jarvis_api_branches_p$page_count -c branches_pipeline.yaml
 
 #cat $p_start_file $p_resources_file > $merge_file
 #printf "\n" >> $merge_file
