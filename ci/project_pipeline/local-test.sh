@@ -11,7 +11,7 @@ this_dir=`pwd`
 
 cd ~/git/jarvis_api
 
-new_branch_list=$(git branch -r --no-merged | sed '/test/d' | sed "s/origin\///" | xargs)
+new_branch_list=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 
 cd $this_dir
 
