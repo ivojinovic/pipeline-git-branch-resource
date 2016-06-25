@@ -4,14 +4,14 @@ export GIT_KEY=`cat git_key`
 
 export PROJECT_GIT_URI=ssh://git@stash.zipcar.com:7999/cheet/pipeline-test-app.git
 export PROJECT_DOCKER_REPO=docker.zipcar.io/app/pipeline_test_app
-export PROJECT_NAME=pipeline_test_app
-export PIPELINE_NAME=pta_branches
+export PROJECT_NAME=jarvis_api
+export PIPELINE_NAME=jarvis_api_branches
 
 this_dir=`pwd`
 
-cd ~/git/pipeline-test-app
+cd ~/git/jarvis_api
 
-new_branch_list=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
+new_branch_list=$(git branch -r --no-merged | sed '/test/d' | sed "s/origin\///" | xargs)
 
 cd $this_dir
 
@@ -20,9 +20,11 @@ cd $this_dir
 #rm deploy.yaml.bak
 #rm merge.yaml
 
-./build.sh pipeline_start.yaml pipeline_resources.yaml pipeline_jobs.yaml merge.yaml $new_branch_list
-spruce merge merge.yaml > deploy.yaml
-sed -i.bak 's/|-/|/g' deploy.yaml
+echo $new_branch_list
+
+./build.sh $new_branch_list
+#spruce merge merge.yaml > deploy.yaml
+#sed -i.bak 's/|-/|/g' deploy.yaml
 
 echo $PIPELINE_NAME
 
