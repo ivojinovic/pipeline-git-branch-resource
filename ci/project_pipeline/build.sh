@@ -14,21 +14,21 @@ spruce merge master_pipeline.yaml > branches_pipeline.yaml
 
 # Go through each branch name passed in
 count=1
-page_count=0
+#page_count=0
 file_is_blank=false
 for var in "$@"
 do
-    if [ "$count" -eq "6" ] ; then
-        echo "Break"
-        page_count=`expr $page_count + 1`
-        echo "Creating pipeline jarvis_api_branches_p$page_count"
-        sed 's~git-app-~~g' branches_pipeline.yaml > branches_pipeline_1.yaml
-        sed 's~docker-app-~~g' branches_pipeline_1.yaml > branches_pipeline_2.yaml
-        fly -t savannah set-pipeline -p jarvis_api_branches_p$page_count -c branches_pipeline_2.yaml
-        rm branches_pipeline.yaml
-        count=0
-        file_is_blank=true
-    fi
+#    if [ "$count" -eq "6" ] ; then
+#        echo "Break"
+#        page_count=`expr $page_count + 1`
+#        echo "Creating pipeline jarvis_api_branches_p$page_count"
+#        sed 's~git-app-~~g' branches_pipeline.yaml > branches_pipeline_1.yaml
+#        sed 's~docker-app-~~g' branches_pipeline_1.yaml > branches_pipeline_2.yaml
+#        fly -t savannah set-pipeline -p jarvis_api_branches_p$page_count -c branches_pipeline_2.yaml
+#        rm branches_pipeline.yaml
+#        count=0
+#        file_is_blank=true
+#    fi
 
     # create a branch copy of the "master only", and in this copy, replace all references to master with references to a branch
     # BUT ... prevent any ignore_branches: master from getting overwritten
@@ -58,11 +58,11 @@ rm original_pipeline.yaml
 rm master_pipeline.yaml
 
 # set the branches version
-page_count=`expr $page_count + 1`
-echo "Creating pipeline jarvis_api_branches_p$page_count"
+#page_count=`expr $page_count + 1`
+#echo "Creating pipeline jarvis_api_branches_p$page_count"
 sed 's~git-app-~~g' branches_pipeline.yaml > branches_pipeline_1.yaml
 sed 's~docker-app-~~g' branches_pipeline_1.yaml > branches_pipeline_2.yaml
-fly -t savannah set-pipeline -p jarvis_api_branches_p$page_count -c branches_pipeline_2.yaml
+fly -t savannah set-pipeline -p jarvis_api_branches -c branches_pipeline_2.yaml
 
 #cat $p_start_file $p_resources_file > $merge_file
 #printf "\n" >> $merge_file
