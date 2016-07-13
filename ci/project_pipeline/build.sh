@@ -7,7 +7,14 @@ fly -t savannah get-pipeline -p jarvis_api_ddb > original_pipeline.yaml
 
 # Remove all jobs from it, except the the DEVBRANCH jobs
 # Creating "DEVBRANCH only" pipeline
-spruce json original_pipeline.yaml | jq '{"jobs": [.["jobs"][] | select(.name | contains("DEVBRANCH"))], "resource_types": .["resource_types"], "resources": .["resources"]}' | json2yaml > DEVBRANCH_pipeline.yaml
+spruce json original_pipeline.yaml | jq '{"jobs": [.["jobs"][] | select(.name | contains("DEVBRANCH"))], "resource_types": .["resource_types"], "resources": .["resources"]}' | json2yaml > DEVBRANCH_pipeline_0.yaml
+
+spruce json original_pipeline.yaml | jq '{"groups": [.["groups"][] | select(.name | contains("dev"))]}' | json2yaml > dev_groups.yaml
+sed 's~dev~DEVBRANCH~g' dev_groups.yaml > DEVBRANCH_groups.yaml
+
+spruce merge DEVBRANCH_pipeline_0.yaml DEVBRANCH_groups.yaml > DEVBRANCH_pipeline.yaml
+#cat DEVBRANCH_groups.yaml >> DEVBRANCH_pipeline.yaml
+#exit 0
 
 #echo "Start with DEVBRANCH"
 #spruce merge DEVBRANCH_pipeline.yaml > branches_pipeline.yaml
@@ -56,6 +63,9 @@ done
 
 rm original_pipeline.yaml
 rm DEVBRANCH_pipeline.yaml
+rm DEVBRANCH_pipeline_0.yaml
+rm DEVBRANCH_groups.yaml
+rm dev_groups.yaml
 
 # set the branches version
 #page_count=`expr $page_count + 1`
