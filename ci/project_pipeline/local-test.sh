@@ -39,7 +39,7 @@ cd $this_dir
 
 echo $new_branch_list
 
-./build.sh jarvis_api_ddb $new_branch_list
+./build.sh savannah jarvis_api_ddb $new_branch_list
 #spruce merge merge.yaml > deploy.yaml
 #sed -i.bak 's/|-/|/g' deploy.yaml
 
