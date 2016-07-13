@@ -8,7 +8,7 @@ NEW_PIPELINE_SUFFIX=_dev_branches
 
 this_directory=`pwd`
 
-# Get the list of active branches
+# Get the list of active dev branches
 cd ~/concourse/git/test/
 if [ -d "$PROJECT_NAME" ]; then
     rm -Rf $PROJECT_NAME
