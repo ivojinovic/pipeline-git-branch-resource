@@ -2,8 +2,12 @@
 
 set -e
 
+PIPELINE_NAME=$1
+
+echo $PIPELINE_NAME
+
 # Get the original pipeline
-fly -t savannah get-pipeline -p jarvis_api_ddb > original_pipeline.yaml
+fly -t savannah get-pipeline -p $PIPELINE_NAME > original_pipeline.yaml
 
 # Remove all jobs from it, except the the DEVBRANCH jobs
 # Creating "DEVBRANCH only" pipeline
@@ -14,13 +18,17 @@ sed 's~dev~DEVBRANCH~g' dev_groups.yaml > DEVBRANCH_groups.yaml
 
 spruce merge DEVBRANCH_pipeline_0.yaml DEVBRANCH_groups.yaml > DEVBRANCH_pipeline.yaml
 
-
 # Go through each branch name passed in
 count=1
 #page_count=0
 file_is_blank=true
+first_var=true
 for var in "$@"
 do
+    if [ $first_var == true ] ; then
+        first_var=false
+        continue
+    fi
     # create a branch copy of the "DEVBRANCH only", and in this copy, replace all references to DEVBRANCH with references to a branch
     # BUT ... prevent any ignore_branches: DEVBRANCH from getting overwritten
     sed 's~ignore_branches: DEVBRANCH~ignore_branches: mobster~g' DEVBRANCH_pipeline.yaml > working_copy1.yaml
@@ -51,7 +59,8 @@ rm DEVBRANCH_pipeline_0.yaml
 rm DEVBRANCH_groups.yaml
 rm dev_groups.yaml
 
-sed 's~git-app-~~g' branches_pipeline.yaml > branches_pipeline_1.yaml
-sed 's~docker-app-~~g' branches_pipeline_1.yaml > branches_pipeline_2.yaml
-fly -t savannah set-pipeline -p jarvis_api_ddb_dev -c branches_pipeline_2.yaml
+echo $PIPELINE_NAME
 
+fly -t savannah set-pipeline -p jarvis_api_ddb_dev -c branches_pipeline.yaml
+
+rm branches_pipeline.yaml
