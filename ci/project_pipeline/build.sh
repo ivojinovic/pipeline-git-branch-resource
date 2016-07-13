@@ -72,6 +72,7 @@ rm DEVBRANCH_jobs_pipeline.yaml
 rm DEVBRANCH_groups.yaml
 rm dev_groups.yaml
 
+#echo y |
 fly -t $CONCOURSE_TARGET set-pipeline -p "$ORIGINAL_PIPELINE_NAME"_dev -c branches_pipeline.yaml
 
 rm branches_pipeline.yaml
