@@ -15,7 +15,6 @@ if [ -d "$PROJECT_NAME" ]; then
 fi
 git clone $PROJECT_GIT_URI
 cd $PROJECT_NAME
-
 ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 
 # Create a pipeline for them
