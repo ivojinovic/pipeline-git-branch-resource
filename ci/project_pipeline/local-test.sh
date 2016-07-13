@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-export PROJECT_NAME=jarvis_api
+CONCOURSE_TARGET=savannah
+PROJECT_NAME=jarvis_api
+ORIGINAL_PIPELINE_NAME=jarvis_api_ddb
 
 this_directory=`pwd`
 
@@ -11,7 +13,7 @@ fi
 git clone ssh://git@stash.zipcar.com:7999/cheet/$PROJECT_NAME.git
 cd $PROJECT_NAME
 
-ACTIVE_BRANCHES=$(git branch -r --no-merged | sed '/logger/d' | sed '/test-data/d' | sed "s/origin\///" | xargs)
+ACTIVE_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 
 cd $this_directory
-./build.sh savannah jarvis_api_ddb $ACTIVE_BRANCHES
+./set_dev_pipeline.sh $CONCOURSE_TARGET $ORIGINAL_PIPELINE_NAME $ACTIVE_BRANCHES
