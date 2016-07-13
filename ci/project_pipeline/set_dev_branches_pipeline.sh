@@ -4,6 +4,7 @@ set -e
 
 CONCOURSE_TARGET=$1
 ORIGINAL_PIPELINE_NAME=$2
+NEW_PIPELINE_SUFFIX=$3
 
 #####
 # Get the original pipeline
@@ -38,7 +39,7 @@ do
     # Skip the first two vars to get to the branch name vars
     ####
     VAR_COUNT=`expr $VAR_COUNT + 1`
-    if [ "$VAR_COUNT" -lt "3" ] ; then
+    if [ "$VAR_COUNT" -lt "4" ] ; then
         continue
     fi
 
@@ -73,6 +74,6 @@ rm DEVBRANCH_groups.yaml
 rm dev_groups.yaml
 
 #echo y |
-fly -t $CONCOURSE_TARGET set-pipeline -p "$ORIGINAL_PIPELINE_NAME"_dev -c branches_pipeline.yaml
+fly -t $CONCOURSE_TARGET set-pipeline -p "$ORIGINAL_PIPELINE_NAME$NEW_PIPELINE_SUFFIX" -c branches_pipeline.yaml
 
 rm branches_pipeline.yaml
