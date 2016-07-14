@@ -10,5 +10,5 @@ ADD spruce-linux-1.5.0 /usr/local/bin/spruce
 RUN chmod +x /usr/local/bin/spruce
 
 RUN apk update && \
-    apk add git && \
+    apk add git jq && \
     npm install -y -g json2yaml
