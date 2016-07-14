@@ -1,4 +1,4 @@
-FROM concourse/buildroot:git
+FROM docker.zipcar.io/base
 
 ADD assets/ /opt/resource/
 RUN chmod +x /opt/resource/*
