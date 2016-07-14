@@ -9,6 +9,6 @@ RUN chmod +x /usr/local/bin/fly
 ADD spruce-linux-1.5.0 /usr/local/bin/spruce
 RUN chmod +x /usr/local/bin/spruce
 
-RUN apt-get update && \
-    apt-get install -y git && \
+RUN apk update && \
+    apk add git && \
     npm install -y -g json2yaml
