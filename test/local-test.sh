@@ -3,7 +3,7 @@
 CONCOURSE_TARGET=savannah
 PROJECT_NAME=jarvis_api
 PROJECT_GIT_URI=ssh://git@stash.zipcar.com:7999/cheet/jarvis_api.git
-ORIGINAL_PIPELINE_NAME=jarvis_api_ddb
+ORIGINAL_PIPELINE_NAME=jarvis_api_test
 NEW_PIPELINE_SUFFIX=_dev_branches
 
 this_directory=`pwd`
