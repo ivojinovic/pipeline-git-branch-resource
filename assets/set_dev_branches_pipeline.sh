@@ -111,6 +111,6 @@ rm branches_main_group_pipeline.yaml
 rm branches_main_group_section.yaml
 rm branches_pipeline.yaml
 
-echo y | fly -t $CONCOURSE_TARGET set-pipeline -p "$ORIGINAL_PIPELINE_NAME$NEW_PIPELINE_SUFFIX" -c branches_pipeline_final.yaml
+echo y | fly -t $CONCOURSE_TARGET set-pipeline -p "$ORIGINAL_PIPELINE_NAME$NEW_PIPELINE_SUFFIX" -c branches_pipeline_final.yaml  > /dev/null
 
 rm branches_pipeline_final.yaml
