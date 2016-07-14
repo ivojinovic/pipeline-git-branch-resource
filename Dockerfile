@@ -11,3 +11,5 @@ RUN chmod +x /usr/local/bin/spruce
 
 ADD scripts/install_git_lfs.sh install_git_lfs.sh
 RUN ./install_git_lfs.sh
+
+RUN npm install -y -g json2yaml
