@@ -19,4 +19,5 @@ ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 
 # Create a pipeline for them
 cd $this_directory
-./../assets/set_dev_branches_pipeline.sh $CONCOURSE_TARGET $ORIGINAL_PIPELINE_NAME $NEW_PIPELINE_SUFFIX PROMPT $ACTIVE_DEV_BRANCHES
+TEMPLATE_TOKEN=branches-template
+./../assets/set_dev_branches_pipeline.sh $CONCOURSE_TARGET $ORIGINAL_PIPELINE_NAME $NEW_PIPELINE_SUFFIX PROMPT $TEMPLATE_TOKEN $ACTIVE_DEV_BRANCHES

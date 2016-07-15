@@ -6,7 +6,8 @@ CONCOURSE_TARGET=$1
 ORIGINAL_PIPELINE_NAME=$2
 NEW_PIPELINE_SUFFIX=$3
 PROMPT_TO_FLY=$4
-BRANCH_LIST_PARAMS_INDEX=5
+TEMPLATE_TOKEN=$5
+BRANCH_LIST_PARAMS_INDEX=6
 
 #####
 # Get the original pipeline
@@ -14,20 +15,20 @@ BRANCH_LIST_PARAMS_INDEX=5
 fly -t $CONCOURSE_TARGET get-pipeline -p $ORIGINAL_PIPELINE_NAME > original_pipeline.yaml
 
 #####
-# Remove all jobs from it, except the the DEVBRANCH jobs, thus creating "DEVBRANCH jobs only" pipeline
+# Remove all jobs from it, except the the $TEMPLATE_TOKEN jobs, thus creating "$TEMPLATE_TOKEN jobs only" pipeline
 #####
 spruce json original_pipeline.yaml | \
-    jq '{"jobs": [.["jobs"][] | select(.name | contains("DEVBRANCH"))], "resource_types": .["resource_types"], "resources": .["resources"]}' | \
-    json2yaml > DEVBRANCH_jobs_pipeline.yaml
+    jq --arg TP_TOKEN $TEMPLATE_TOKEN '{"jobs": [.["jobs"][] | select(.name | contains($TP_TOKEN))], "resource_types": .["resource_types"], "resources": .["resources"]}' | \
+    json2yaml > template_jobs_pipeline.yaml
 
 #####
-# Add the DEVBRANCH group to that
+# Add the $TEMPLATE_TOKEN group to that
 #####
 spruce json original_pipeline.yaml | \
     jq '{"groups": [.["groups"][] | select(.name | contains("dev"))]}' | \
     json2yaml > dev_group.yaml
-sed 's~dev~DEVBRANCH~g' dev_group.yaml > DEVBRANCH_groups_pipeline.yaml
-spruce merge DEVBRANCH_jobs_pipeline.yaml DEVBRANCH_groups_pipeline.yaml > DEVBRANCH_pipeline.yaml
+sed 's~dev~'"$TEMPLATE_TOKEN"'~g' dev_group.yaml > template_groups_pipeline.yaml
+spruce merge template_jobs_pipeline.yaml template_groups_pipeline.yaml > template_pipeline.yaml
 
 #####
 # Create the main group template
@@ -36,11 +37,11 @@ spruce json original_pipeline.yaml | \
     jq '{"groups": [.["groups"][] | select(.name | contains("dev"))]}' | \
     jq '{"jobs": .["groups"][0].jobs}' |
     json2yaml > dev_group_for_main.yaml
-sed 's~dev~'"$ORIGINAL_PIPELINE_NAME"'~g' dev_group_for_main.yaml > DEVBRANCH_main_group.yaml
+sed 's~dev~'"$ORIGINAL_PIPELINE_NAME"'~g' dev_group_for_main.yaml > template_main_group.yaml
 
 
 #####
-# Now, turn all things DEVBRANCH into actual branches, as passed in
+# Now, turn all things $TEMPLATE_TOKEN into actual branches, as passed in
 #####
 VAR_COUNT=0
 FIRST_BRANCH=true
@@ -55,16 +56,16 @@ do
     fi
 
     ####
-    # For each branch name, get the DEVBRANCH pipeline, and then replace the word "DEVBRANCH" with that branch name
+    # For each branch name, get the $TEMPLATE_TOKEN pipeline, and then replace the word "$TEMPLATE_TOKEN" with that branch name
     ####
     BRANCH_NAME_UNSLASHED=`echo $VAR | sed -e "s/\//-/g"`
-    sed 's~DEVBRANCH~'"$BRANCH_NAME_UNSLASHED"'~g' DEVBRANCH_pipeline.yaml > branch_name_pipeline.yaml
+    sed 's~'"$TEMPLATE_TOKEN"'~'"$BRANCH_NAME_UNSLASHED"'~g' template_pipeline.yaml > branch_name_pipeline.yaml
     printf "\n" >> branch_name_pipeline.yaml
 
     ####
-    # For each branch name, get the DEVBRANCH main group pipeline, and then replace the word "DEVBRANCH" with that branch name
+    # For each branch name, get the $TEMPLATE_TOKEN main group pipeline, and then replace the word "$TEMPLATE_TOKEN" with that branch name
     ####
-    sed 's~DEVBRANCH~'"$BRANCH_NAME_UNSLASHED"'~g' DEVBRANCH_main_group.yaml > branch_name_main_group.yaml
+    sed 's~'"$TEMPLATE_TOKEN"'~'"$BRANCH_NAME_UNSLASHED"'~g' template_main_group.yaml > branch_name_main_group.yaml
     printf "\n" >> branch_name_main_group.yaml
 
     ####
@@ -100,10 +101,10 @@ spruce merge branches_main_group_pipeline.yaml branches_pipeline.yaml  > branche
 
 # cleanup
 rm original_pipeline.yaml
-rm DEVBRANCH_pipeline.yaml
-rm DEVBRANCH_main_group.yaml
-rm DEVBRANCH_jobs_pipeline.yaml
-rm DEVBRANCH_groups_pipeline.yaml
+rm template_pipeline.yaml
+rm template_main_group.yaml
+rm template_jobs_pipeline.yaml
+rm template_groups_pipeline.yaml
 rm dev_group.yaml
 rm dev_group_for_main.yaml
 rm branch_name_main_group.yaml
