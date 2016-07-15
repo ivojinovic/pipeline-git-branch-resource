@@ -5,6 +5,8 @@ set -e
 CONCOURSE_TARGET=$1
 ORIGINAL_PIPELINE_NAME=$2
 NEW_PIPELINE_SUFFIX=$3
+PROMPT_TO_FLY=$4
+BRANCH_LIST_PARAMS_INDEX=5
 
 #####
 # Get the original pipeline
@@ -48,7 +50,7 @@ do
     # Skip the first two vars to get to the branch name vars
     ####
     VAR_COUNT=`expr $VAR_COUNT + 1`
-    if [ "$VAR_COUNT" -lt "4" ] ; then
+    if [ "$VAR_COUNT" -lt "$BRANCH_LIST_PARAMS_INDEX" ] ; then
         continue
     fi
 
@@ -111,6 +113,12 @@ rm branches_main_group_pipeline.yaml
 rm branches_main_group_section.yaml
 rm branches_pipeline.yaml
 
-echo y | fly -t $CONCOURSE_TARGET set-pipeline -p "$ORIGINAL_PIPELINE_NAME$NEW_PIPELINE_SUFFIX" -c branches_pipeline_final.yaml  > /dev/null
+if [ "$PROMPT_TO_FLY" == "PROMPT" ] ; then
+    fly -t $CONCOURSE_TARGET set-pipeline -p "$ORIGINAL_PIPELINE_NAME$NEW_PIPELINE_SUFFIX" -c branches_pipeline_final.yaml
+fi
+
+if [ "$PROMPT_TO_FLY" == "NO_PROMPT" ] ; then
+    echo y | fly -t $CONCOURSE_TARGET set-pipeline -p "$ORIGINAL_PIPELINE_NAME$NEW_PIPELINE_SUFFIX" -c branches_pipeline_final.yaml  > /dev/null
+fi
 
 rm branches_pipeline_final.yaml
