@@ -7,7 +7,8 @@ ORIGINAL_PIPELINE_NAME=$2
 NEW_PIPELINE_SUFFIX=$3
 PROMPT_TO_FLY=$4
 TEMPLATE_TOKEN=$5
-BRANCH_LIST_PARAMS_INDEX=6
+TEMPLATE_GROUP=$6
+BRANCH_LIST_PARAMS_INDEX=7
 
 #####
 # Get the original pipeline
@@ -25,19 +26,19 @@ spruce json original_pipeline.yaml | \
 # Add the $TEMPLATE_TOKEN group to that
 #####
 spruce json original_pipeline.yaml | \
-    jq '{"groups": [.["groups"][] | select(.name | contains("dev"))]}' | \
+    jq --arg TP_GROUP $TEMPLATE_GROUP '{"groups": [.["groups"][] | select(.name | contains($TP_GROUP))]}' | \
     json2yaml > dev_group.yaml
-sed 's~dev~'"$TEMPLATE_TOKEN"'~g' dev_group.yaml > template_groups_pipeline.yaml
+sed 's~name: "'"$TEMPLATE_GROUP"'"~name: "'"$TEMPLATE_TOKEN"'"~g' dev_group.yaml > template_groups_pipeline.yaml
 spruce merge template_jobs_pipeline.yaml template_groups_pipeline.yaml > template_pipeline.yaml
 
 #####
 # Create the main group template
 #####
 spruce json original_pipeline.yaml | \
-    jq '{"groups": [.["groups"][] | select(.name | contains("dev"))]}' | \
+    jq --arg TP_GROUP $TEMPLATE_GROUP '{"groups": [.["groups"][] | select(.name | contains($TP_GROUP))]}' | \
     jq '{"jobs": .["groups"][0].jobs}' |
     json2yaml > dev_group_for_main.yaml
-sed 's~dev~'"$ORIGINAL_PIPELINE_NAME"'~g' dev_group_for_main.yaml > template_main_group.yaml
+sed 's~name: "'"$TEMPLATE_GROUP"'"~name: "'"$ORIGINAL_PIPELINE_NAME"'"~g' dev_group_for_main.yaml > template_main_group.yaml
 
 
 #####

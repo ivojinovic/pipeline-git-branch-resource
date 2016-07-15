@@ -4,7 +4,7 @@ CONCOURSE_TARGET=savannah
 PROJECT_NAME=jarvis_api
 PROJECT_GIT_URI=ssh://git@stash.zipcar.com:7999/cheet/jarvis_api.git
 ORIGINAL_PIPELINE_NAME=jarvis_api_test
-NEW_PIPELINE_SUFFIX=_dev_branches
+NEW_PIPELINE_SUFFIX=_dev
 
 this_directory=`pwd`
 
@@ -20,4 +20,11 @@ ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 # Create a pipeline for them
 cd $this_directory
 TEMPLATE_TOKEN=branches-template
-./../assets/set_dev_branches_pipeline.sh $CONCOURSE_TARGET $ORIGINAL_PIPELINE_NAME $NEW_PIPELINE_SUFFIX PROMPT $TEMPLATE_TOKEN $ACTIVE_DEV_BRANCHES
+TEMPLATE_GROUP=template-for_dev
+./../assets/set_dev_branches_pipeline.sh \
+    $CONCOURSE_TARGET \
+    $ORIGINAL_PIPELINE_NAME \
+    $NEW_PIPELINE_SUFFIX PROMPT \
+    $TEMPLATE_TOKEN \
+    $TEMPLATE_GROUP \
+    $ACTIVE_DEV_BRANCHES
