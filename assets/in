@@ -51,7 +51,7 @@ echo -e "$CONCOURSE_USERNAME\n$CONCOURSE_PASSWORD\n" | fly -t $CONCOURSE_TARGET 
 # Create the pipeline for the active dev branches
 ORIGINAL_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $payload)
 NEW_PIPELINE_SUFFIX=_dev
-TEMPLATE_TOKEN=branches-template
+TEMPLATE_TOKEN=dev-branches-template
 TEMPLATE_GROUP=template-for_dev
 PROMPT_TO_FLY=NO_PROMPT
 
