@@ -19,18 +19,16 @@ resource_types:
   type: docker-image
   source:
     repository: ivanvojinovic/pipeline-git-branch-resource
-    tag: v4.1
+    tag: v6.0
 
 resources:
 
 - name:         pipeline-git-branch-resource
   type:         pipeline-git-branch-resource-type
   source:
-    project_name:         (( grab meta.project.name ))
     project_pipeline:     (( grab meta.project.pipeline ))
     project_git_uri:      (( grab meta.project.git_uri ))
     project_git_key:      (( grab meta.project.git_key ))
-    project_docker_repo:  (( grab meta.project.docker_repo ))
     concourse_url:        (( grab meta.concourse.url ))
     concourse_username:   (( grab meta.concourse.username ))
     concourse_password:   (( grab meta.concourse.password ))

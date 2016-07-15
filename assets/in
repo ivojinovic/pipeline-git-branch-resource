@@ -26,44 +26,32 @@ load_pubkey $payload
 configure_git_ssl_verification $payload
 configure_credentials $payload
 
-project_git_uri=$(jq -r '.source.project_git_uri // ""' < $payload)
-project_docker_repo=$(jq -r '.source.project_docker_repo // ""' < $payload)
-git_key=$(jq -r '.source.project_git_key // ""' < $payload)
-old_branch_list=$(jq -r '.version.ref // ""' < $payload)
+#old_branch_list=$(jq -r '.version.ref // ""' < $payload)
 
-destination=$TMPDIR/git-resource-repo-cache
-
-if [ -d $destination ]; then
-  cd $destination
+# Get the list of active dev branches
+GIT_CLONE_DIRECTORY=$TMPDIR/git-resource-repo-cache
+if [ -d $GIT_CLONE_DIRECTORY ]; then
+  cd $GIT_CLONE_DIRECTORY
   git fetch
   git reset --hard FETCH_HEAD
 else
-  git clone $project_git_uri $destination
-  cd $destination
+  PROJECT_GIT_URI=$(jq -r '.source.project_git_uri // ""' < $payload)
+  git clone $PROJECT_GIT_URI $GIT_CLONE_DIRECTORY
+  cd $GIT_CLONE_DIRECTORY
 fi
+ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 
-new_branch_list=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
+# Log in to concourse
+CONCOURSE_TARGET=savannah
+CONCOURSE_USERNAME=$(jq -r '.source.concourse_username // ""' < $payload)
+CONCOURSE_PASSWORD=$(jq -r '.source.concourse_password // ""' < $payload)
+CONCOURSE_URL=$(jq -r '.source.concourse_url // ""' < $payload)
+echo -e "$CONCOURSE_USERNAME\n$CONCOURSE_PASSWORD\n" | fly -t $CONCOURSE_TARGET login --concourse-url $CONCOURSE_URL
 
-concourse_url=$(jq -r '.source.concourse_url // ""' < $payload)
-concourse_username=$(jq -r '.source.concourse_username // ""' < $payload)
-concourse_password=$(jq -r '.source.concourse_password // ""' < $payload)
-project_name=$(jq -r '.source.project_name // ""' < $payload)
-project_pipeline=$(jq -r '.source.project_pipeline // ""' < $payload)
-
-echo -e "$concourse_username\n$concourse_password\n" | fly -t savannah login --concourse-url $concourse_url
-
-# spruce needs these in env vars
-export GIT_KEY=$git_key
-export PROJECT_GIT_URI=$project_git_uri
-export PROJECT_DOCKER_REPO=$project_docker_repo
-export PROJECT_NAME=$project_name
-export PIPELINE_NAME=$project_pipeline
-
-/opt/resource/build.sh /opt/resource/pipeline_start.yaml /opt/resource/pipeline_resources.yaml /opt/resource/pipeline_jobs.yaml merge.yaml $new_branch_list
-spruce merge merge.yaml > deploy.yaml
-sed -i.bak 's/|-/|/g' deploy.yaml
-
-echo y | fly -t savannah set-pipeline -p $PIPELINE_NAME -c deploy.yaml
+# Create the pipeline for the active dev branches
+ORIGINAL_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $payload)
+NEW_PIPELINE_SUFFIX=_dev_branches
+/opt/resource/set_dev_branches_pipeline.sh $CONCOURSE_TARGET $ORIGINAL_PIPELINE_NAME $NEW_PIPELINE_SUFFIX $ACTIVE_DEV_BRANCHES
 
 jq -n "{
   version: {ref: $(echo $new_branch_list | jq -R .)}
