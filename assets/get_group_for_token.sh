@@ -18,9 +18,10 @@ spruce json $INPUT_FILE_NAME | \
                     .["groups"][] | select(.name | contains($ORIGINAL_GROUP_NAME))
                 ]
      }' | \
-    json2yaml > group_for_"$ORIGINAL_GROUP_NAME".yaml
+    json2yaml > group_for_"$ORIGINAL_GROUP_NAME"_0.yaml
+# _0 above is for the sace where ORIGINAL_GROUP_NAME and WORK_GROUP_NAME are the same
 
 #####
 # Change that name to the name that the new pipeline generating code can understand (the "template token" name)
 #####
-sed 's~name: "'"$ORIGINAL_GROUP_NAME"'"~name: "'"$WORK_GROUP_NAME"'"~g' group_for_"$ORIGINAL_GROUP_NAME".yaml > $OUTPUT_FILE_NAME
+sed 's~name: "'"$ORIGINAL_GROUP_NAME"'"~name: "'"$WORK_GROUP_NAME"'"~g' group_for_"$ORIGINAL_GROUP_NAME"_0.yaml > $OUTPUT_FILE_NAME
