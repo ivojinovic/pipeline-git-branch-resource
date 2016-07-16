@@ -38,6 +38,12 @@ spruce json original_pipeline.yaml | \
     jq '{"groups": [.["groups"][] | select(.name | contains("master"))]}' | \
     jq '{"jobs": .["groups"][0].jobs}' |
     json2yaml > job_list_for_main_group_template_master.yaml
+
+# Get a list of jobs that have this token in their name, so they can be placed in the main group
+spruce json original_pipeline.yaml | \
+    jq --arg TEMPLATE_GROUP $TEMPLATE_GROUP '{"groups": [.["groups"][] | select(.name | contains($TEMPLATE_GROUP))]}' | \
+    jq '{"jobs": .["groups"][0].jobs}' |
+    json2yaml > job_list_for_main_group_template_template.yaml
 #----------------------------
 
 # Get all the jobs, resource types, and resources for jobs that have this token in their name
@@ -52,6 +58,12 @@ spruce json original_pipeline.yaml | \
     original_pipeline.yaml \
     master \
     lane_for_master.yaml
+
+# Get all the jobs, resource types, and resources for jobs that have this token in their name
+"$COMMAND_PREFIX"/get_lane_for_token.sh \
+    original_pipeline.yaml \
+    $TEMPLATE_TOKEN \
+    lane_for_template.yaml
 #----------------------------
 
 # Get the job group for the template lane
@@ -68,6 +80,13 @@ spruce json original_pipeline.yaml | \
     master \
     master \
     group_for_master.yaml
+
+# Get the job group for the template lane
+"$COMMAND_PREFIX"/get_group_for_token.sh \
+    original_pipeline.yaml \
+    $TEMPLATE_GROUP \
+    $TEMPLATE_TOKEN \
+    group_for_template.yaml
 #----------------------------
 
 # Merge the lane and the group
@@ -80,6 +99,11 @@ spruce merge \
 spruce merge \
     lane_for_master.yaml group_for_master.yaml > \
     jobs_resources_and_group_template_master.yaml
+
+# Merge the lane and the group
+spruce merge \
+    lane_for_template.yaml group_for_template.yaml > \
+    jobs_resources_and_group_template_template.yaml
 #----------------------------
 
 ######
@@ -150,7 +174,11 @@ cat all_branches_job_list_for_main_group_array.yaml >> final_main_group_section.
 spruce json final_main_group_section.yaml | jq '{"groups": [.]}' | json2yaml > final_main_group.yaml
 
 # Finally, merge the jobs/resources/group pipeline and the main group
-spruce merge jobs_resources_and_group_template_master.yaml final_main_group.yaml all_branches_jobs_resources_and_group_pipeline.yaml > new_pipeline.yaml
+spruce merge \
+    jobs_resources_and_group_template_master.yaml \
+    jobs_resources_and_group_template_template.yaml \
+    final_main_group.yaml \
+    all_branches_jobs_resources_and_group_pipeline.yaml > new_pipeline.yaml
 
 if [ "$LOCAL_OR_CONCOURSE" == "LOCAL" ] ; then
     fly -t $CONCOURSE_TARGET set-pipeline -p "$ORIGINAL_PIPELINE_NAME$NEW_PIPELINE_SUFFIX" -c new_pipeline.yaml
