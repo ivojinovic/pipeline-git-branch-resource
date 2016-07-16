@@ -50,8 +50,19 @@ echo -e "$CONCOURSE_USERNAME\n$CONCOURSE_PASSWORD\n" | fly -t $CONCOURSE_TARGET 
 
 # Create the pipeline for the active dev branches
 ORIGINAL_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $payload)
-NEW_PIPELINE_SUFFIX=_dev_branches
-/opt/resource/set_dev_branches_pipeline.sh $CONCOURSE_TARGET $ORIGINAL_PIPELINE_NAME $NEW_PIPELINE_SUFFIX $ACTIVE_DEV_BRANCHES
+NEW_PIPELINE_SUFFIX=_dev
+TEMPLATE_TOKEN=dev-branches-template
+TEMPLATE_GROUP=template-for_dev
+LOCAL_OR_CONCOURSE=CONCOURSE
+
+/opt/resource/set_dev_branches_pipeline.sh \
+    $CONCOURSE_TARGET \
+    $ORIGINAL_PIPELINE_NAME \
+    $NEW_PIPELINE_SUFFIX \
+    $LOCAL_OR_CONCOURSE \
+    $TEMPLATE_TOKEN \
+    $TEMPLATE_GROUP \
+    $ACTIVE_DEV_BRANCHES
 
 jq -n "{
   version: {ref: $(echo $new_branch_list | jq -R .)}
