@@ -35,6 +35,20 @@ fi
 
 new_branch_list=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 
+destination2=$TMPDIR/git-resource-repo-cache-2
+if [ -d $destination2 ]; then
+  cd $destination2
+  git fetch
+  git reset --hard FETCH_HEAD
+else
+  git clone ssh://git@stash.zipcar.com:7999/sav/pipelines.git $destination2
+  cd $destination2
+fi
+
+pipelines_ref=$(git rev-parse HEAD)
+
+new_branch_list="$new_branch_list $pipelines_ref"
+
 if [ "${ref}" = "${new_branch_list}" ]; then
     echo '[{ "ref": "'$old_branch_list'" }]' >&3
 else
