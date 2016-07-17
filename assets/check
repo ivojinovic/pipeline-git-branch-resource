@@ -45,6 +45,8 @@ else
   cd $destination2
 fi
 
+# TODO: FIX THIS!! so that it uses master instead (or better yet: passed in branch name)
+git checkout dynamic-dev-branches
 pipelines_ref=$(git rev-parse HEAD)
 
 new_branch_list="$new_branch_list $pipelines_ref"
