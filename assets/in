@@ -29,7 +29,7 @@ configure_credentials $payload
 #old_branch_list=$(jq -r '.version.ref // ""' < $payload)
 
 # Get the list of active dev branches
-GIT_CLONE_DIRECTORY=$TMPDIR/git-resource-repo-cache
+GIT_CLONE_DIRECTORY=$TMPDIR/git-resource-repo-cache-1
 if [ -d $GIT_CLONE_DIRECTORY ]; then
   cd $GIT_CLONE_DIRECTORY
   git fetch

@@ -22,7 +22,7 @@ configure_credentials $payload
 project_git_uri=$(jq -r '.source.project_git_uri // ""' < $payload)
 old_branch_list=$(jq -r '.version.ref // ""' < $payload)
 
-destination=$TMPDIR/git-resource-repo-cache
+destination=$TMPDIR/git-resource-repo-cache-1
 
 if [ -d $destination ]; then
   cd $destination
