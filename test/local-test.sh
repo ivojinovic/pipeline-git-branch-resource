@@ -19,16 +19,14 @@ ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 cd $this_directory
 
 ORIGINAL_PIPELINE_NAME=jarvis_api_test
-NEW_PIPELINE_SUFFIX=_dev
-TEMPLATE_TOKEN=dev-branches-template
-TEMPLATE_GROUP=template-for_dev
+TEMPLATE_TOKEN=unmerged-branches-template
+TEMPLATE_GROUP=unmerged-branches-template
 LOCAL_OR_CONCOURSE=LOCAL
 
 ./../assets/set_dev_branches_pipeline.sh \
     $CONCOURSE_TARGET \
     $ORIGINAL_PIPELINE_NAME \
-    $NEW_PIPELINE_SUFFIX \
     $LOCAL_OR_CONCOURSE \
     $TEMPLATE_TOKEN \
     $TEMPLATE_GROUP \
-    $ACTIVE_DEV_BRANCHES
+    test-1

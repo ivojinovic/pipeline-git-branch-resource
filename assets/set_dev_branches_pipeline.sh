@@ -7,11 +7,11 @@ set -e
 
 CONCOURSE_TARGET=$1
 ORIGINAL_PIPELINE_NAME=$2
-NEW_PIPELINE_SUFFIX=$3
-LOCAL_OR_CONCOURSE=$4
-TEMPLATE_TOKEN=$5
-TEMPLATE_GROUP=$6
-BRANCH_LIST_PARAMS_INDEX=7
+#NEW_PIPELINE_SUFFIX=$3
+LOCAL_OR_CONCOURSE=$3
+TEMPLATE_TOKEN=$4
+TEMPLATE_GROUP=$5
+BRANCH_LIST_PARAMS_INDEX=6
 
 if [ "$LOCAL_OR_CONCOURSE" == "LOCAL" ] ; then
     COMMAND_PREFIX=./../assets
@@ -39,17 +39,17 @@ spruce json original_pipeline.yaml | \
     jq '{"jobs": .["groups"][0].jobs}' |
     json2yaml > job_list_for_main_group_template_master.yaml
 
-# Get a list of jobs that have this token in their name, so they can be placed in the main group
-spruce json original_pipeline.yaml | \
-    jq --arg TEMPLATE_GROUP $TEMPLATE_GROUP '{"groups": [.["groups"][] | select(.name | contains($TEMPLATE_GROUP))]}' | \
-    jq '{"jobs": .["groups"][0].jobs}' |
-    json2yaml > job_list_for_main_group_template_template.yaml
-
-# Get a list of jobs that have this token in their name, so they can be placed in the main group
-spruce json original_pipeline.yaml | \
-    jq '{"groups": [.["groups"][] | select(.name | contains("update_dev"))]}' | \
-    jq '{"jobs": .["groups"][0].jobs}' |
-    json2yaml > job_list_for_main_group_template_updater.yaml
+## Get a list of jobs that have this token in their name, so they can be placed in the main group
+#spruce json original_pipeline.yaml | \
+#    jq --arg TEMPLATE_GROUP $TEMPLATE_GROUP '{"groups": [.["groups"][] | select(.name | contains($TEMPLATE_GROUP))]}' | \
+#    jq '{"jobs": .["groups"][0].jobs}' |
+#    json2yaml > job_list_for_main_group_template_template.yaml
+#
+## Get a list of jobs that have this token in their name, so they can be placed in the main group
+#spruce json original_pipeline.yaml | \
+#    jq '{"groups": [.["groups"][] | select(.name | contains("unmerged-branches-updater"))]}' | \
+#    jq '{"jobs": .["groups"][0].jobs}' |
+#    json2yaml > job_list_for_main_group_template_updater.yaml
 #----------------------------
 
 # Get all the jobs, resource types, and resources for jobs that have this token in their name
@@ -74,7 +74,7 @@ spruce json original_pipeline.yaml | \
 # Get all the jobs, resource types, and resources for jobs that have this token in their name
 "$COMMAND_PREFIX"/get_lane_for_token.sh \
     original_pipeline.yaml \
-    update_dev \
+    update_unmerged_branches \
     lane_for_updater.yaml
 #----------------------------
 
@@ -103,8 +103,8 @@ spruce json original_pipeline.yaml | \
 # Get the job group for the template lane
 "$COMMAND_PREFIX"/get_group_for_token.sh \
     original_pipeline.yaml \
-    updater-for_dev \
-    updater-for_dev \
+    unmerged-branches-updater \
+    unmerged-branches-updater \
     group_for_updater.yaml
 #----------------------------
 
