@@ -63,7 +63,7 @@ echo -e "$CONCOURSE_USERNAME\n$CONCOURSE_PASSWORD\n" | fly -t $CONCOURSE_TARGET 
 fly -t $CONCOURSE_TARGET get-pipeline -p $ORIGINAL_PIPELINE_NAME > current_pipeline.yaml
 
 CURRENT_PIPELINE_GROUPS=$(spruce json current_pipeline.yaml | jq '.["groups"][].name' | xargs)
-EXPECTED_PIPELINE_GROUPS="master unmerged-branches-template unmerged-branches-updater $new_branch_list"
+EXPECTED_PIPELINE_GROUPS="master unmerged-branches-template unmerged-branches-updater unmerged-branches $new_branch_list"
 
 new_branch_list="$new_branch_list $pipelines_ref"
 TS_ADDED=false

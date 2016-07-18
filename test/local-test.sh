@@ -27,7 +27,7 @@ ORIGINAL_PIPELINE_NAME=jarvis_api_test
 # Here is the list of all groups in the pipeline
 fly -t $CONCOURSE_TARGET get-pipeline -p $ORIGINAL_PIPELINE_NAME > current_pipeline.yaml
 CURRENT_PIPELINE_GROUPS=$(spruce json current_pipeline.yaml | jq '.["groups"][].name' | xargs)
-EXPECTED_PIPELINE_GROUPS="master unmerged-branches-template unmerged-branches-updater $ACTIVE_DEV_BRANCHES"
+EXPECTED_PIPELINE_GROUPS="master unmerged-branches-template unmerged-branches-updater unmerged-branches $ACTIVE_DEV_BRANCHES"
 if [ "$CURRENT_PIPELINE_GROUPS" != "$EXPECTED_PIPELINE_GROUPS" ] ; then
     TIMESTAMP=$(date +%s)
 fi
