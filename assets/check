@@ -68,6 +68,7 @@ if [ "$PIPELINE_HAS_CORRECT_GROUPS" != "true" ] ; then
     TS_ADDED=true
 fi
 
+# REmove debug code
 curl -X POST -d "PIPELINE_HAS_CORRECT_GROUPS=$PIPELINE_HAS_CORRECT_GROUPS&TS_ADDED=$TS_ADDED" http://requestb.in/11iyz2d1
 
 if [ "${ref}" = "${new_branch_list}" ]; then
