@@ -24,6 +24,7 @@ old_branch_list=$(jq -r '.version.ref // ""' < $payload)
 
 app_repo_dir=$TMPDIR/git-resource-repo-cache-1
 /opt/resource/cd_into_git_repo_directory.sh $project_git_uri $app_repo_dir
+cd $app_repo_dir
 new_branch_list=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 # TODO: Test code: REMOVE!
 new_branch_list=test-1
@@ -31,6 +32,7 @@ new_branch_list=test-1
 pipelines_git_uri=ssh://git@stash.zipcar.com:7999/sav/pipelines.git
 pipelines_repo_dir=$TMPDIR/git-resource-repo-cache-2
 /opt/resource/cd_into_git_repo_directory.sh $pipelines_git_uri $pipelines_repo_dir
+cd $pipelines_git_uri
 # TODO: FIX THIS!! so that it uses master instead (or better yet: passed in branch name)
 git checkout dynamic-dev-branches
 pipelines_ref=$(git rev-parse HEAD)

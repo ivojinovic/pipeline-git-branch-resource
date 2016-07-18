@@ -32,6 +32,7 @@ configure_credentials $payload
 PROJECT_GIT_URI=$(jq -r '.source.project_git_uri // ""' < $payload)
 GIT_CLONE_DIRECTORY=$TMPDIR/git-resource-repo-cache-1
 /opt/resource/cd_into_git_repo_directory.sh $PROJECT_GIT_URI $GIT_CLONE_DIRECTORY
+cd $GIT_CLONE_DIRECTORY
 ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 # TODO: Test code: REMOVE!
 ACTIVE_DEV_BRANCHES=test-1
