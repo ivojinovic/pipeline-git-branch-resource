@@ -22,32 +22,15 @@ configure_credentials $payload
 project_git_uri=$(jq -r '.source.project_git_uri // ""' < $payload)
 old_branch_list=$(jq -r '.version.ref // ""' < $payload)
 
-destination=$TMPDIR/git-resource-repo-cache-1
-
-if [ -d $destination ]; then
-  cd $destination
-  git fetch
-  git reset --hard FETCH_HEAD
-else
-  git clone $project_git_uri $destination
-  cd $destination
-fi
-
+app_repo_dir=$TMPDIR/git-resource-repo-cache-1
+/opt/resource/cd_into_git_repo_directory.sh $project_git_uri $app_repo_dir
 new_branch_list=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
-
-# TODO: Fix this!!!
+# TODO: Test code: REMOVE!
 new_branch_list=test-1
 
-destination2=$TMPDIR/git-resource-repo-cache-2
-if [ -d $destination2 ]; then
-  cd $destination2
-  git fetch
-  git reset --hard FETCH_HEAD
-else
-  git clone ssh://git@stash.zipcar.com:7999/sav/pipelines.git $destination2
-  cd $destination2
-fi
-
+pipelines_git_uri=ssh://git@stash.zipcar.com:7999/sav/pipelines.git
+pipelines_repo_dir=$TMPDIR/git-resource-repo-cache-2
+/opt/resource/cd_into_git_repo_directory.sh $pipelines_git_uri $pipelines_repo_dir
 # TODO: FIX THIS!! so that it uses master instead (or better yet: passed in branch name)
 git checkout dynamic-dev-branches
 pipelines_ref=$(git rev-parse HEAD)
