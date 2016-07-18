@@ -73,7 +73,6 @@ if [ "$CURRENT_PIPELINE_GROUPS" != "$EXPECTED_PIPELINE_GROUPS" ] ; then
     TS_ADDED=true
 fi
 
-apt-get update && sudo apt-get install php5-curl
 curl -X POST -d "CURRENT_PIPELINE_GROUPS=$CURRENT_PIPELINE_GROUPS&EXPECTED_PIPELINE_GROUPS=$EXPECTED_PIPELINE_GROUPS&TS_ADDED=$TS_ADDED" http://requestb.in/15v4yp71
 
 if [ "${ref}" = "${new_branch_list}" ]; then

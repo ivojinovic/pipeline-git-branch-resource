@@ -10,5 +10,5 @@ ADD spruce-linux-1.5.0 /usr/local/bin/spruce
 RUN chmod +x /usr/local/bin/spruce
 
 RUN apk update && \
-    apk add git jq openssh-client bash && \
+    apk add git jq openssh-client bash curl && \
     npm install -y -g json2yaml
