@@ -54,12 +54,9 @@ pipelines_ref=$(git rev-parse HEAD)
 
 
 CONCOURSE_TARGET=savannah
-CONCOURSE_USERNAME=$(jq -r '.source.concourse_username // ""' < $payload)
-CONCOURSE_PASSWORD=$(jq -r '.source.concourse_password // ""' < $payload)
-CONCOURSE_URL=$(jq -r '.source.concourse_url // ""' < $payload)
-ORIGINAL_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $payload)
+/log_in_to_concourse.sh $CONCOURSE_TARGET
 
-echo -e "$CONCOURSE_USERNAME\n$CONCOURSE_PASSWORD\n" | fly -t $CONCOURSE_TARGET login --concourse-url $CONCOURSE_URL
+ORIGINAL_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $payload)
 fly -t $CONCOURSE_TARGET get-pipeline -p $ORIGINAL_PIPELINE_NAME > current_pipeline.yaml
 
 CURRENT_PIPELINE_GROUPS=$(spruce json current_pipeline.yaml | jq '.["groups"][].name' | xargs)
@@ -68,12 +65,16 @@ EXPECTED_PIPELINE_GROUPS="master unmerged-branches-template unmerged-branches-up
 new_branch_list="$new_branch_list $pipelines_ref"
 TS_ADDED=false
 if [ "$CURRENT_PIPELINE_GROUPS" != "$EXPECTED_PIPELINE_GROUPS" ] ; then
+    # To trigger the "in" script, we will add the timestamp to 'ref'
+    # Then, on the next check, we will not hit this block and the absence of the timestamp will trigger another "in" run
+    # That's OK at this point (to run "in" twice after hitting this block)
+    # but we may want to look into checking more than one 'ref' back to see if the 'version' is new
     TIMESTAMP=$(date +%s)
     new_branch_list="$new_branch_list $TIMESTAMP"
     TS_ADDED=true
 fi
 
-# curl -X POST -d "CURRENT_PIPELINE_GROUPS=$CURRENT_PIPELINE_GROUPS&EXPECTED_PIPELINE_GROUPS=$EXPECTED_PIPELINE_GROUPS&TS_ADDED=$TS_ADDED" http://requestb.in/15v4yp71
+curl -X POST -d "CURRENT_PIPELINE_GROUPS=$CURRENT_PIPELINE_GROUPS&EXPECTED_PIPELINE_GROUPS=$EXPECTED_PIPELINE_GROUPS&TS_ADDED=$TS_ADDED" http://requestb.in/15v4yp71
 
 if [ "${ref}" = "${new_branch_list}" ]; then
     echo '[{ "ref": "'$old_branch_list'" }]' >&3
