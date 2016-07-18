@@ -52,18 +52,11 @@ fi
 git checkout dynamic-dev-branches
 pipelines_ref=$(git rev-parse HEAD)
 
-CONCOURSE_TARGET=savannah
-/opt/resource/log_in_to_concourse.sh $CONCOURSE_TARGET $payload
-
-ORIGINAL_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $payload)
-fly -t $CONCOURSE_TARGET get-pipeline -p $ORIGINAL_PIPELINE_NAME > current_pipeline.yaml
-
-CURRENT_PIPELINE_GROUPS=$(spruce json current_pipeline.yaml | jq '.["groups"][].name' | xargs)
-EXPECTED_PIPELINE_GROUPS="master unmerged-branches-template unmerged-branches-updater unmerged-branches $new_branch_list"
+PIPELINE_HAS_CORRECT_GROUPS=$(/opt/resource/pipeline_has_correct_groups.sh $payload $new_branch_list)
 
 new_branch_list="$new_branch_list $pipelines_ref"
 TS_ADDED=false
-if [ "$CURRENT_PIPELINE_GROUPS" != "$EXPECTED_PIPELINE_GROUPS" ] ; then
+if [ "$PIPELINE_HAS_CORRECT_GROUPS" != "true" ] ; then
     # To trigger the "in" script, we will add the timestamp to 'ref'
     # Then, on the next check, we will not hit this block and the absence of the timestamp will trigger another "in" run
     # That's OK at this point (to run "in" twice after hitting this block)
