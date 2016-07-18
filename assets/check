@@ -52,9 +52,8 @@ fi
 git checkout dynamic-dev-branches
 pipelines_ref=$(git rev-parse HEAD)
 
-
 CONCOURSE_TARGET=savannah
-/log_in_to_concourse.sh $CONCOURSE_TARGET
+/opt/resource/log_in_to_concourse.sh $CONCOURSE_TARGET
 
 ORIGINAL_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $payload)
 fly -t $CONCOURSE_TARGET get-pipeline -p $ORIGINAL_PIPELINE_NAME > current_pipeline.yaml
@@ -74,7 +73,7 @@ if [ "$CURRENT_PIPELINE_GROUPS" != "$EXPECTED_PIPELINE_GROUPS" ] ; then
     TS_ADDED=true
 fi
 
-curl -X POST -d "CURRENT_PIPELINE_GROUPS=$CURRENT_PIPELINE_GROUPS&EXPECTED_PIPELINE_GROUPS=$EXPECTED_PIPELINE_GROUPS&TS_ADDED=$TS_ADDED" http://requestb.in/15v4yp71
+curl -X POST -d "CURRENT_PIPELINE_GROUPS=$CURRENT_PIPELINE_GROUPS&EXPECTED_PIPELINE_GROUPS=$EXPECTED_PIPELINE_GROUPS&TS_ADDED=$TS_ADDED" http://requestb.in/11iyz2d1
 
 if [ "${ref}" = "${new_branch_list}" ]; then
     echo '[{ "ref": "'$old_branch_list'" }]' >&3
