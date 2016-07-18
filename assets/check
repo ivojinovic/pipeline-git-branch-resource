@@ -35,6 +35,9 @@ fi
 
 new_branch_list=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 
+# TODO: Fix this!!!
+new_branch_list=test-1
+
 destination2=$TMPDIR/git-resource-repo-cache-2
 if [ -d $destination2 ]; then
   cd $destination2
