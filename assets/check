@@ -53,7 +53,7 @@ git checkout dynamic-dev-branches
 pipelines_ref=$(git rev-parse HEAD)
 
 CONCOURSE_TARGET=savannah
-/opt/resource/log_in_to_concourse.sh $CONCOURSE_TARGET
+/opt/resource/log_in_to_concourse.sh $CONCOURSE_TARGET $payload
 
 ORIGINAL_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $payload)
 fly -t $CONCOURSE_TARGET get-pipeline -p $ORIGINAL_PIPELINE_NAME > current_pipeline.yaml

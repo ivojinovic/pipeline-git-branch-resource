@@ -46,7 +46,7 @@ ACTIVE_DEV_BRANCHES=test-1
 
 # Log in to concourse
 CONCOURSE_TARGET=savannah
-/opt/resource/log_in_to_concourse.sh $CONCOURSE_TARGET
+/opt/resource/log_in_to_concourse.sh $CONCOURSE_TARGET $payload
 
 # Create the pipeline for the active dev branches
 ORIGINAL_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $payload)
