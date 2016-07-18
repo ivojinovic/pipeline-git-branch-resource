@@ -52,7 +52,9 @@ fi
 git checkout dynamic-dev-branches
 pipelines_ref=$(git rev-parse HEAD)
 
-PIPELINE_HAS_CORRECT_GROUPS=$(/opt/resource/pipeline_has_correct_groups.sh $payload $new_branch_list)
+echo "true" > /opt/resource/pipeline_has_correct_groups.out
+/opt/resource/pipeline_has_correct_groups.sh $payload $new_branch_list
+PIPELINE_HAS_CORRECT_GROUPS=`cat /opt/resource/pipeline_has_correct_groups.out`
 
 new_branch_list="$new_branch_list $pipelines_ref"
 TS_ADDED=false

@@ -15,7 +15,7 @@ EXPECTED_PIPELINE_GROUPS="master unmerged-branches-template unmerged-branches-up
 curl -X POST -d "CURRENT_PIPELINE_GROUPS=$CURRENT_PIPELINE_GROUPS&EXPECTED_PIPELINE_GROUPS=$EXPECTED_PIPELINE_GROUPS" http://requestb.in/11iyz2d1
 
 if [ "$CURRENT_PIPELINE_GROUPS" == "$EXPECTED_PIPELINE_GROUPS" ] ; then
-    echo "true"
+    echo "true" > /opt/resource/pipeline_has_correct_groups.out
 else
-    echo "false"
+    echo "false" > /opt/resource/pipeline_has_correct_groups.out
 fi
