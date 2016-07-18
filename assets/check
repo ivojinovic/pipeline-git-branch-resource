@@ -25,9 +25,8 @@ old_ref=$(jq -r '.version.ref // ""' < $payload)
 app_repo_dir=$TMPDIR/git-resource-repo-cache-1
 /opt/resource/clone_git_repo_into_directory.sh $app_git_uri $app_repo_dir
 cd $app_repo_dir
-ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
-# TODO: Test code: REMOVE!
-ACTIVE_DEV_BRANCHES=test-1
+# TODO: Test code: REMOVE! | sed '/test-/!d'
+ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | sed '/test-/!d' | xargs)
 
 # Get the sha of the latest commit of the pipelines project
 # TODO: This needs to be a parameter
