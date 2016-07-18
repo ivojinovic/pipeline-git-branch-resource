@@ -66,12 +66,14 @@ CURRENT_PIPELINE_GROUPS=$(spruce json current_pipeline.yaml | jq '.["groups"][].
 EXPECTED_PIPELINE_GROUPS="master unmerged-branches-template unmerged-branches-updater $new_branch_list"
 
 new_branch_list="$new_branch_list $pipelines_ref"
+TS_ADDED=false
 if [ "$CURRENT_PIPELINE_GROUPS" != "$EXPECTED_PIPELINE_GROUPS" ] ; then
     TIMESTAMP=$(date +%s)
     new_branch_list="$new_branch_list $TIMESTAMP"
+    TS_ADDED=true
 fi
 
-
+curl -X POST -d "CURRENT_PIPELINE_GROUPS=$CURRENT_PIPELINE_GROUPS&EXPECTED_PIPELINE_GROUPS=$EXPECTED_PIPELINE_GROUPS&TS_ADDED=$TS_ADDED" http://requestb.in/15v4yp71
 
 if [ "${ref}" = "${new_branch_list}" ]; then
     echo '[{ "ref": "'$old_branch_list'" }]' >&3
