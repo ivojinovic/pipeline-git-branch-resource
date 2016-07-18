@@ -18,10 +18,26 @@ ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 # TODO: Fix this
 ACTIVE_DEV_BRANCHES=test-1
 
+ORIGINAL_PIPELINE_NAME=jarvis_api_test
+
+#-----------------
+# This is "check" code, not "in"!!!
+# We now have all the active branches from git
+# We need to check that against the branches we currently have in this pipeline
+# Here is the list of all groups in the pipeline
+fly -t $CONCOURSE_TARGET get-pipeline -p $ORIGINAL_PIPELINE_NAME > current_pipeline.yaml
+CURRENT_PIPELINE_GROUPS=$(spruce json current_pipeline.yaml | jq '.["groups"][].name' | xargs)
+EXPECTED_PIPELINE_GROUPS="master unmerged-branches-template unmerged-branches-updater $ACTIVE_DEV_BRANCHES"
+if [ "$CURRENT_PIPELINE_GROUPS" != "$EXPECTED_PIPELINE_GROUPS" ] ; then
+    TIMESTAMP=$(date +%s)
+fi
+#-----------------
+#exit 0
+
+
 # Create a pipeline for them
 cd $this_directory
 
-ORIGINAL_PIPELINE_NAME=jarvis_api_test
 TEMPLATE_TOKEN=unmerged-branches-template
 TEMPLATE_GROUP=unmerged-branches-template
 LOCAL_OR_CONCOURSE=LOCAL
