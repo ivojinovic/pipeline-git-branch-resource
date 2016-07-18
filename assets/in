@@ -41,6 +41,9 @@ else
 fi
 ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 
+# TODO: Fix this
+ACTIVE_DEV_BRANCHES=test-1
+
 # Log in to concourse
 CONCOURSE_TARGET=savannah
 CONCOURSE_USERNAME=$(jq -r '.source.concourse_username // ""' < $payload)
@@ -60,7 +63,7 @@ LOCAL_OR_CONCOURSE=CONCOURSE
     $LOCAL_OR_CONCOURSE \
     $TEMPLATE_TOKEN \
     $TEMPLATE_GROUP \
-    test-1
+    $ACTIVE_DEV_BRANCHES
 
 jq -n "{
   version: {ref: $(echo $new_branch_list | jq -R .)}

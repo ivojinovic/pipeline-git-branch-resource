@@ -15,6 +15,9 @@ git clone $PROJECT_GIT_URI
 cd $PROJECT_NAME
 ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 
+# TODO: Fix this
+ACTIVE_DEV_BRANCHES=test-1
+
 # Create a pipeline for them
 cd $this_directory
 
@@ -29,4 +32,4 @@ LOCAL_OR_CONCOURSE=LOCAL
     $LOCAL_OR_CONCOURSE \
     $TEMPLATE_TOKEN \
     $TEMPLATE_GROUP \
-    test-1
+    $ACTIVE_DEV_BRANCHES
