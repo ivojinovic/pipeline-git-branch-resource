@@ -9,5 +9,4 @@ if [ -d $DIRECTORY ]; then
   git reset --hard FETCH_HEAD
 else
   git clone $REPO_URL $DIRECTORY
-  cd $DIRECTORY
 fi
