@@ -31,9 +31,8 @@ APP_GIT_URI=$(jq -r '.source.project_git_uri // ""' < $payload)
 GIT_CLONE_DIRECTORY=$TMPDIR/git-resource-repo-cache-1
 /opt/resource/clone_git_repo_into_directory.sh $APP_GIT_URI $GIT_CLONE_DIRECTORY
 cd $GIT_CLONE_DIRECTORY
-ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
-# TODO: Test code: REMOVE!
-ACTIVE_DEV_BRANCHES=test-1
+# TODO: Test code: REMOVE! | sed '/test-/!d'
+ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | sed '/test-/!d' | xargs)
 
 # Log in to concourse
 CONCOURSE_TARGET=savannah

@@ -16,9 +16,6 @@ cd $PROJECT_NAME
 # TODO: Test code: REMOVE! | sed '/test-/!d'
 ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | sed '/test-/!d' | xargs)
 
-# TODO: Fix this
-ACTIVE_DEV_BRANCHES=test-1
-
 ORIGINAL_PIPELINE_NAME=jarvis_api_test
 
 #-----------------
