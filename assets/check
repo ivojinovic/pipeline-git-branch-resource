@@ -21,7 +21,6 @@ source $(dirname $0)/export_parameter_values.sh
 export_parameter_values $payload
 
 # TODO: Improve this source param name: should be app, not project
-PARAM_APP_GIT_URI=$(jq -r '.source.project_git_uri // ""' < $payload)
 old_ref=$(jq -r '.version.ref // ""' < $payload)
 
 # Get the list of active (unmerged to master) dev branches
