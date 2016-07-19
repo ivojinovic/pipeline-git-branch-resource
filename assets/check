@@ -46,7 +46,7 @@ if [ "$LOC_APP_PIPELINE_HAS_CORRECT_GROUPS" == "false" ] ; then
 fi
 
 # Debug code
-# curl -X POST -d "PIPELINE_HAS_CORRECT_GROUPS=$PIPELINE_HAS_CORRECT_GROUPS&new_ref=new_ref" http://requestb.in/11iyz2d1
+curl -X POST -d "LOC_APP_PIPELINE_HAS_CORRECT_GROUPS=$LOC_APP_PIPELINE_HAS_CORRECT_GROUPS&LOC_NEW_REF=LOC_NEW_REF" http://requestb.in/19bcmhc1
 
 if [ "${ref}" = "${LOC_NEW_REF}" ]; then
     echo '[{ "ref": "'$PARAM_OLD_REF'" }]' >&3
