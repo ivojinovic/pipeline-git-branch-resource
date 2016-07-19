@@ -1,23 +1,20 @@
 #!/usr/bin/env bash
 
-PAYLOAD=$1
-STATIC_GROUPS=$2
-ACTIVE_DEV_BRANCHES=$3
-OUTPUT_FILE=$4
+STATIC_GROUPS=$1
+APP_DEV_BRANCHES=$2
+OUTPUT_FILE=$3
 
 echo "true" > $OUTPUT_FILE
 
 CONCOURSE_TARGET=savannah
-/opt/resource/log_in_to_concourse.sh $CONCOURSE_TARGET $PAYLOAD
+echo -e "$PARAM_CONCOURSE_USERNAME\n$PARAM_CONCOURSE_PASSWORD\n" | fly -t $CONCOURSE_TARGET login --concourse-url $PARAM_CONCOURSE_URL
 
-# TODO: Change 'project' to 'app'
-ORIGINAL_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $PAYLOAD)
-fly -t $CONCOURSE_TARGET get-pipeline -p $ORIGINAL_PIPELINE_NAME > current_pipeline.yaml
+fly -t $CONCOURSE_TARGET get-pipeline -p $PARAM_APP_PIPELINE_NAME > current_pipeline.yaml
 CURRENT_PIPELINE_GROUPS=$(spruce json current_pipeline.yaml | jq '.["groups"][].name' | xargs)
 
 EXPECTED_PIPELINE_GROUPS="$STATIC_GROUPS"
-if [ -n "${ACTIVE_DEV_BRANCHES}" ]; then
-    EXPECTED_PIPELINE_GROUPS="$STATIC_GROUPS $ACTIVE_DEV_BRANCHES"
+if [ -n "${APP_DEV_BRANCHES}" ]; then
+    EXPECTED_PIPELINE_GROUPS="$STATIC_GROUPS $APP_DEV_BRANCHES"
 fi
 
 # Debug code

@@ -37,18 +37,16 @@ ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | sed '/tes
 
 # Log in to concourse
 CONCOURSE_TARGET=savannah
-/opt/resource/log_in_to_concourse.sh $CONCOURSE_TARGET $payload
+echo -e "$PARAM_CONCOURSE_USERNAME\n$PARAM_CONCOURSE_PASSWORD\n" | fly -t $CONCOURSE_TARGET login --concourse-url $PARAM_CONCOURSE_URL
 
 # Create the pipeline for the active dev branches
-# TODO: Improve this source param name: should be app, not project
-ORIGINAL_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $payload)
 # TODO: This needs to be a parameter
 TEMPLATE_TOKEN=unmerged-branches-template
 LOCAL_OR_CONCOURSE=CONCOURSE
 
 /opt/resource/set_dev_branches_pipeline.sh \
     $CONCOURSE_TARGET \
-    $ORIGINAL_PIPELINE_NAME \
+    $PARAM_APP_PIPELINE_NAME \
     $LOCAL_OR_CONCOURSE \
     $TEMPLATE_TOKEN \
     $ACTIVE_DEV_BRANCHES
