@@ -26,7 +26,7 @@ export_parameter_values $payload
 # Get the list of app dev branches
 clone_git_repo_into_directory $PARAM_APP_GIT_URI $CONST_APP_GIT_DIR
 cd $CONST_APP_GIT_DIR
-LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" $PARAM_APP_BRANCH_FILTER | xargs)
+LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_BRANCH_FILTER_PIPE | xargs)
 
 # Get the sha of the latest commit of the pipelines project
 clone_git_repo_into_directory $PARAM_PIPELINES_GIT_URI $CONST_PIPELINES_GIT_DIR
