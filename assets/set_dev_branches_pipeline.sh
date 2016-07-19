@@ -13,67 +13,30 @@ TEMPLATE_GROUP=$5
 BRANCH_LIST_PARAMS_INDEX=6
 
 if [ "$LOCAL_OR_CONCOURSE" == "LOCAL" ] ; then
-    COMMAND_PREFIX=./../assets
+    source ./../assets/branches_common.sh
 else
-    COMMAND_PREFIX=/opt/resource
+    source /opt/resource/branches_common.sh
 fi
-
-source $COMMAND_PREFIX/branches_common.sh
 
 # Get the original pipeline
 fly -t $CONCOURSE_TARGET get-pipeline -p $ORIGINAL_PIPELINE_NAME > original_pipeline.yaml
 
-# Get full master lane
+# Get the full lane for each tab
 get_lane_for_token original_pipeline.yaml master lane_for_master.yaml
-# Get full unmerged branches template lane
 get_lane_for_token original_pipeline.yaml $TEMPLATE_TOKEN lane_for_template.yaml
-# Get full branches updater lane
 # TODO: 'update_unmerged_branches' here needs to be a parameter
 get_lane_for_token original_pipeline.yaml update_unmerged_branches lane_for_updater.yaml
 
-# Get the job group for the template lane
-"$COMMAND_PREFIX"/get_group_for_token.sh \
-    original_pipeline.yaml \
-    $TEMPLATE_GROUP \
-    $TEMPLATE_TOKEN \
-    group_for_template.yaml
+# Get the group (job list) for each tabs
+get_group_for_token original_pipeline.yaml master master group_for_master.yaml
+get_group_for_token original_pipeline.yaml $TEMPLATE_GROUP $TEMPLATE_TOKEN group_for_template.yaml
+# TODO: 'unmerged-branches-updater' here needs to be a parameter
+get_group_for_token original_pipeline.yaml unmerged-branches-updater unmerged-branches-updater group_for_updater.yaml
 
-#----------------------------
-# Get the job group for the template lane
-"$COMMAND_PREFIX"/get_group_for_token.sh \
-    original_pipeline.yaml \
-    master \
-    master \
-    group_for_master.yaml
-
-# Get the job group for the template lane
-"$COMMAND_PREFIX"/get_group_for_token.sh \
-    original_pipeline.yaml \
-    unmerged-branches-updater \
-    unmerged-branches-updater \
-    group_for_updater.yaml
-#----------------------------
-
-# Merge the lane and the group
-spruce merge \
-    lane_for_template.yaml group_for_template.yaml > \
-    jobs_resources_and_group_for_template.yaml
-
-#----------------------------
-# Merge the lane and the group
-spruce merge \
-    lane_for_master.yaml group_for_master.yaml > \
-    jobs_resources_and_group_for_master.yaml
-
-# Merge the lane and the group
-spruce merge \
-    lane_for_updater.yaml group_for_updater.yaml > \
-    jobs_resources_and_group_for_updater.yaml
-#----------------------------
-
-######
-# END - Create branch template - the main group, the branch group, and the branch lane (jobs, resource types, and resources)
-######
+# Merge the lane and the group for each tab
+spruce merge lane_for_master.yaml group_for_master.yaml > full_tab_for_master.yaml
+spruce merge lane_for_template.yaml group_for_template.yaml > full_tab_for_template.yaml
+spruce merge lane_for_updater.yaml group_for_updater.yaml > full_tab_for_updater.yaml
 
 # Get a list of jobs placed in the template group
 spruce json original_pipeline.yaml | \
@@ -98,8 +61,8 @@ do
     BRANCH_NAME_UNSLASHED=`echo $VAR | sed -e "s/\//-/g"`
 
     # Get branch name into the jobs/resources/group template
-    sed 's~'"$TEMPLATE_TOKEN"'~'"$BRANCH_NAME_UNSLASHED"'~g' jobs_resources_and_group_for_template.yaml > jobs_resources_and_group_pipeline.yaml
-    printf "\n" >> jobs_resources_and_group_pipeline.yaml
+    sed 's~'"$TEMPLATE_TOKEN"'~'"$BRANCH_NAME_UNSLASHED"'~g' full_tab_for_template.yaml > full_tab_for_branch.yaml
+    printf "\n" >> full_tab_for_branch.yaml
 
     # Get branch name into the list of jobs for the main group
     sed 's~'"$TEMPLATE_TOKEN"'~'"$BRANCH_NAME_UNSLASHED"'~g' job_list_for_template.yaml > job_list_for_branch.yaml
@@ -109,12 +72,12 @@ do
     if [ $FIRST_BRANCH == true ] ; then
         FIRST_BRANCH=false
         echo "Starting with $BRANCH_NAME_UNSLASHED"
-        spruce merge jobs_resources_and_group_pipeline.yaml > all_branches_jobs_resources_and_group_pipeline.yaml
+        spruce merge full_tab_for_branch.yaml > full_tab_for_all_branches.yaml
         # do the same for the main group section
         spruce merge job_list_for_branch.yaml > job_list_for_all_branches.yaml
     else
         echo "Adding Branch $BRANCH_NAME_UNSLASHED"
-        spruce merge all_branches_jobs_resources_and_group_pipeline.yaml jobs_resources_and_group_pipeline.yaml >> all_branches_jobs_resources_and_group_pipeline.yaml
+        spruce merge full_tab_for_all_branches.yaml full_tab_for_branch.yaml >> full_tab_for_all_branches.yaml
         # do the same for the main group section
         spruce merge job_list_for_all_branches.yaml job_list_for_branch.yaml >> job_list_for_all_branches.yaml
     fi
@@ -139,11 +102,11 @@ spruce json unmerged_branches_group_section.yaml | jq '{"groups": [.]}' | json2y
 
 # Finally, merge the jobs/resources/group pipeline and the main group
 spruce merge \
-    jobs_resources_and_group_for_master.yaml \
-    jobs_resources_and_group_for_template.yaml \
-    jobs_resources_and_group_for_updater.yaml \
+    full_tab_for_master.yaml \
+    full_tab_for_template.yaml \
+    full_tab_for_updater.yaml \
     unmerged_branches_group.yaml \
-    all_branches_jobs_resources_and_group_pipeline.yaml > new_pipeline.yaml
+    full_tab_for_all_branches.yaml > new_pipeline.yaml
 
 if [ "$LOCAL_OR_CONCOURSE" == "LOCAL" ] ; then
     fly -t $CONCOURSE_TARGET set-pipeline -p "$ORIGINAL_PIPELINE_NAME$NEW_PIPELINE_SUFFIX" -c new_pipeline.yaml
