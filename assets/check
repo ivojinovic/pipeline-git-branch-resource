@@ -39,9 +39,11 @@ git checkout dynamic-dev-branches
 PIPELINEST_LAST_SHA=$(git rev-parse HEAD)
 
 # Check if the current pipeline has the groups it should have (in other words: was it recently repipied and the dev branches haven't been expanded yet)
-echo "true" > /opt/resource/pipeline_has_correct_groups.out
-/opt/resource/pipeline_has_correct_groups.sh $payload "$ACTIVE_DEV_BRANCHES"
-PIPELINE_HAS_CORRECT_GROUPS=`cat /opt/resource/pipeline_has_correct_groups.out`
+GROUP_CHECK_OUTPUT_FILE=/opt/resource/pipeline_has_correct_groups.out
+echo "true" > $GROUP_CHECK_OUTPUT_FILE
+STATIC_GROUPS="master unmerged-branches-template unmerged-branches-updater unmerged-branches"
+/opt/resource/pipeline_has_correct_groups.sh $payload "$STATIC_GROUPS" "$ACTIVE_DEV_BRANCHES" $GROUP_CHECK_OUTPUT_FILE
+PIPELINE_HAS_CORRECT_GROUPS=`cat $GROUP_CHECK_OUTPUT_FILE`
 
 # Now, put it all together
 new_ref="$ACTIVE_DEV_BRANCHES $PIPELINEST_LAST_SHA"
