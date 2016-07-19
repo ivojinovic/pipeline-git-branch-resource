@@ -11,54 +11,46 @@ source $(dirname $0)/common.sh
 # for jq
 PATH=/usr/local/bin:$PATH
 
+# Set up git access
 payload=$TMPDIR/git-resource-request
 cat > $payload <&0
 load_pubkey $payload
 configure_git_ssl_verification $payload
 configure_credentials $payload
 
+# Get the parameters for this resource instance
 source $(dirname $0)/export_parameter_values.sh
 export_parameter_values $payload
 
-# TODO: Improve this source param name: should be app, not project
-old_ref=$(jq -r '.version.ref // ""' < $payload)
-
 # Get the list of active (unmerged to master) dev branches
-app_repo_dir=$TMPDIR/git-resource-repo-cache-1
-/opt/resource/clone_git_repo_into_directory.sh $PARAM_APP_GIT_URI $app_repo_dir
-cd $app_repo_dir
+/opt/resource/clone_git_repo_into_directory.sh $PARAM_APP_GIT_URI $CONST_APP_GIT_DIR
+cd $CONST_APP_GIT_DIR
 # TODO: Test code: REMOVE! | sed '/test-/!d'
-ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | sed '/test-/!d' | xargs)
+LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | sed '/test-/!d' | xargs)
 
 # Get the sha of the latest commit of the pipelines project
-# TODO: This needs to be a parameter
-pipelines_git_uri=ssh://git@stash.zipcar.com:7999/sav/pipelines.git
-pipelines_repo_dir=$TMPDIR/git-resource-repo-cache-2
-/opt/resource/clone_git_repo_into_directory.sh $pipelines_git_uri $pipelines_repo_dir
-cd $pipelines_repo_dir
-# TODO: This needs to be a parameter
-git checkout dynamic-dev-branches
-PIPELINEST_LAST_SHA=$(git rev-parse HEAD)
+/opt/resource/clone_git_repo_into_directory.sh $PARAM_PIPELINES_GIT_URI $CONST_PIPELINES_GIT_DIR
+cd $CONST_PIPELINES_GIT_DIR
+git checkout $PARAM_PIPELINES_BRANCH
+LOC_PIPELINES_BRANCH_LAST_COMMIT=$(git rev-parse HEAD)
 
 # Check if the current pipeline has the groups it should have (in other words: was it recently repipied and the dev branches haven't been expanded yet)
-GROUP_CHECK_OUTPUT_FILE=/opt/resource/pipeline_has_correct_groups.out
-echo "true" > $GROUP_CHECK_OUTPUT_FILE
-STATIC_GROUPS="master unmerged-branches-template unmerged-branches-updater unmerged-branches"
-/opt/resource/pipeline_has_correct_groups.sh $payload "$STATIC_GROUPS" "$ACTIVE_DEV_BRANCHES" $GROUP_CHECK_OUTPUT_FILE
-PIPELINE_HAS_CORRECT_GROUPS=`cat $GROUP_CHECK_OUTPUT_FILE`
+echo "true" > $CONST_APP_GROUP_CHECK_OUTPUT_FILE
+/opt/resource/pipeline_has_correct_groups.sh $payload "$PARAM_APP_STATIC_GROUPS" "$LOC_APP_DEV_BRANCHES" $CONST_APP_GROUP_CHECK_OUTPUT_FILE
+LOC_APP_PIPELINE_HAS_CORRECT_GROUPS=`cat $CONST_APP_GROUP_CHECK_OUTPUT_FILE`
 
 # Now, put it all together
-new_ref="$ACTIVE_DEV_BRANCHES $PIPELINEST_LAST_SHA"
-if [ "$PIPELINE_HAS_CORRECT_GROUPS" != "true" ] ; then
-    TIMESTAMP=$(date +%s)
-    new_ref="$new_ref $TIMESTAMP"
+LOC_NEW_REF="$LOC_APP_DEV_BRANCHES $LOC_PIPELINES_BRANCH_LAST_COMMIT"
+if [ "$LOC_APP_PIPELINE_HAS_CORRECT_GROUPS" != "true" ] ; then
+    LOC_TIMESTAMP=$(date +%s)
+    LOC_NEW_REF="$LOC_NEW_REF $LOC_TIMESTAMP"
 fi
 
 # Debug code
 # curl -X POST -d "PIPELINE_HAS_CORRECT_GROUPS=$PIPELINE_HAS_CORRECT_GROUPS&new_ref=new_ref" http://requestb.in/11iyz2d1
 
-if [ "${ref}" = "${new_ref}" ]; then
-    echo '[{ "ref": "'$old_ref'" }]' >&3
+if [ "${ref}" = "${LOC_NEW_REF}" ]; then
+    echo '[{ "ref": "'$PARAM_OLD_REF'" }]' >&3
 else
-    echo '[{ "ref": "'$old_ref'" }, { "ref": "'$new_ref'" }]' >&3
+    echo '[{ "ref": "'$PARAM_OLD_REF'" }, { "ref": "'$LOC_NEW_REF'" }]' >&3
 fi
