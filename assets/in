@@ -24,16 +24,14 @@ load_pubkey $payload
 configure_git_ssl_verification $payload
 configure_credentials $payload
 
-#old_branch_list=$(jq -r '.version.ref // ""' < $payload)
+# Get the parameters for this resource instance
+source $(dirname $0)/export_parameter_values.sh
+export_parameter_values $payload
 
 # Get the list of active dev branches
-# TODO: Improve this source param name: should be app, not project
-APP_GIT_URI=$(jq -r '.source.project_git_uri // ""' < $payload)
-GIT_CLONE_DIRECTORY=$TMPDIR/git-resource-repo-cache-1
-clone_git_repo_into_directory $APP_GIT_URI $GIT_CLONE_DIRECTORY
-cd $GIT_CLONE_DIRECTORY
-# TODO: Test code: REMOVE! | sed '/test-/!d'
-ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | sed '/test-/!d' | xargs)
+clone_git_repo_into_directory $PARAM_APP_GIT_URI $CONST_APP_GIT_DIR
+cd $CONST_APP_GIT_DIR
+LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_BRANCH_FILTER_PIPE | xargs)
 
 # Log in to concourse
 CONCOURSE_TARGET=savannah
@@ -49,7 +47,7 @@ LOCAL_OR_CONCOURSE=CONCOURSE
     $PARAM_APP_PIPELINE_NAME \
     $LOCAL_OR_CONCOURSE \
     $TEMPLATE_TOKEN \
-    $ACTIVE_DEV_BRANCHES
+    $LOC_APP_DEV_BRANCHES
 
 jq -n "{
   version: {ref: $(echo $new_branch_list | jq -R .)}
