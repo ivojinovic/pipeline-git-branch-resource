@@ -46,10 +46,6 @@ PIPELINE_HAS_CORRECT_GROUPS=`cat /opt/resource/pipeline_has_correct_groups.out`
 # Now, put it all together
 new_ref="$ACTIVE_DEV_BRANCHES $PIPELINEST_LAST_SHA"
 if [ "$PIPELINE_HAS_CORRECT_GROUPS" != "true" ] ; then
-    # To trigger the "in" script, we will add the timestamp to 'ref'
-    # Then, on the next check, we will not hit this block and the absence of the timestamp will trigger another "in" run - again
-    # That's OK at this point (to run "in" twice after hitting this block)
-    # but we may want to look into checking more than one 'ref' back to see if the 'version' is new
     TIMESTAMP=$(date +%s)
     new_ref="$new_ref $TIMESTAMP"
 fi

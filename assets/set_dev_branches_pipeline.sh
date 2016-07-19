@@ -7,7 +7,6 @@ set -e
 
 CONCOURSE_TARGET=$1
 ORIGINAL_PIPELINE_NAME=$2
-#NEW_PIPELINE_SUFFIX=$3
 LOCAL_OR_CONCOURSE=$3
 TEMPLATE_TOKEN=$4
 TEMPLATE_GROUP=$5
@@ -18,6 +17,8 @@ if [ "$LOCAL_OR_CONCOURSE" == "LOCAL" ] ; then
 else
     COMMAND_PREFIX=/opt/resource
 fi
+
+source $COMMAND_PREFIX/branches_common.sh
 
 # Get the original pipeline
 fly -t $CONCOURSE_TARGET get-pipeline -p $ORIGINAL_PIPELINE_NAME > original_pipeline.yaml
@@ -32,47 +33,27 @@ spruce json original_pipeline.yaml | \
     jq '{"jobs": .["groups"][0].jobs}' |
     json2yaml > job_list_for_main_group_template.yaml
 
-#----------------------------
-# Get a list of jobs that have this token in their name, so they can be placed in the main group
-spruce json original_pipeline.yaml | \
-    jq '{"groups": [.["groups"][] | select(.name | contains("master"))]}' | \
-    jq '{"jobs": .["groups"][0].jobs}' |
-    json2yaml > job_list_for_main_group_template_master.yaml
-
-## Get a list of jobs that have this token in their name, so they can be placed in the main group
-#spruce json original_pipeline.yaml | \
-#    jq --arg TEMPLATE_GROUP $TEMPLATE_GROUP '{"groups": [.["groups"][] | select(.name | contains($TEMPLATE_GROUP))]}' | \
-#    jq '{"jobs": .["groups"][0].jobs}' |
-#    json2yaml > job_list_for_main_group_template_template.yaml
-#
-## Get a list of jobs that have this token in their name, so they can be placed in the main group
-#spruce json original_pipeline.yaml | \
-#    jq '{"groups": [.["groups"][] | select(.name | contains("unmerged-branches-updater"))]}' | \
-#    jq '{"jobs": .["groups"][0].jobs}' |
-#    json2yaml > job_list_for_main_group_template_updater.yaml
-#----------------------------
-
 # Get all the jobs, resource types, and resources for jobs that have this token in their name
-"$COMMAND_PREFIX"/get_lane_for_token.sh \
+get_lane_for_token \
     original_pipeline.yaml \
     $TEMPLATE_TOKEN \
     lane_for_"$TEMPLATE_TOKEN".yaml
 
 #----------------------------
 # Get all the jobs, resource types, and resources for jobs that have this token in their name
-"$COMMAND_PREFIX"/get_lane_for_token.sh \
+get_lane_for_token \
     original_pipeline.yaml \
     master \
     lane_for_master.yaml
 
 # Get all the jobs, resource types, and resources for jobs that have this token in their name
-"$COMMAND_PREFIX"/get_lane_for_token.sh \
+get_lane_for_token \
     original_pipeline.yaml \
     $TEMPLATE_TOKEN \
     lane_for_template.yaml
 
 # Get all the jobs, resource types, and resources for jobs that have this token in their name
-"$COMMAND_PREFIX"/get_lane_for_token.sh \
+get_lane_for_token \
     original_pipeline.yaml \
     update_unmerged_branches \
     lane_for_updater.yaml
@@ -181,28 +162,21 @@ done
 ####
 
 # Prepare the final main group section
-printf "name: unmerged-branches\n" > final_main_group_section.yaml
-printf "jobs:\n" >> final_main_group_section.yaml
+printf "name: unmerged-branches\n" > unmerged_branches_group_section.yaml
+printf "jobs:\n" >> unmerged_branches_group_section.yaml
 # Prepare the main group pipeline we created
 sed 's~jobs:~~g' all_branches_job_list_for_main_group_pipeline.yaml > all_branches_job_list_for_main_group_array.yaml
 # Add it to the final main group section
-cat all_branches_job_list_for_main_group_array.yaml >> final_main_group_section.yaml
-#----------------------------
-#spruce merge job_list_for_main_group_template_master.yaml > job_list_for_main_group_template_master_clean.yaml
-## Prepare the main group pipeline we created
-#sed 's~jobs:~~g' job_list_for_main_group_template_master_clean.yaml > job_list_for_main_group_template_master_array.yaml
-## Add it to the final main group section
-#cat job_list_for_main_group_template_master_array.yaml >> final_main_group_section.yaml
-#----------------------------
+cat all_branches_job_list_for_main_group_array.yaml >> unmerged_branches_group_section.yaml
 # Wrap the section into a group
-spruce json final_main_group_section.yaml | jq '{"groups": [.]}' | json2yaml > final_main_group.yaml
+spruce json unmerged_branches_group_section.yaml | jq '{"groups": [.]}' | json2yaml > unmerged_branches_group.yaml
 
 # Finally, merge the jobs/resources/group pipeline and the main group
 spruce merge \
     jobs_resources_and_group_template_master.yaml \
     jobs_resources_and_group_template_template.yaml \
     jobs_resources_and_group_template_updater.yaml \
-    final_main_group.yaml \
+    unmerged_branches_group.yaml \
     all_branches_jobs_resources_and_group_pipeline.yaml > new_pipeline.yaml
 
 if [ "$LOCAL_OR_CONCOURSE" == "LOCAL" ] ; then
