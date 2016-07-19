@@ -41,3 +41,16 @@ get_jobs_list_for_group() {
         jq '{"jobs": .["groups"][0].jobs}' |
         json2yaml > $OUTPUT_FILE_NAME
 }
+
+clone_git_repo_into_directory() {
+    REPO_URL=$1
+    DIRECTORY=$2
+
+    if [ -d $DIRECTORY ]; then
+      cd $DIRECTORY
+      git fetch
+      git reset --hard FETCH_HEAD
+    else
+      git clone $REPO_URL $DIRECTORY
+    fi
+}

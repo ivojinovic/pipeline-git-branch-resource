@@ -29,7 +29,7 @@ configure_credentials $payload
 # TODO: Improve this source param name: should be app, not project
 APP_GIT_URI=$(jq -r '.source.project_git_uri // ""' < $payload)
 GIT_CLONE_DIRECTORY=$TMPDIR/git-resource-repo-cache-1
-/opt/resource/clone_git_repo_into_directory.sh $APP_GIT_URI $GIT_CLONE_DIRECTORY
+clone_git_repo_into_directory $APP_GIT_URI $GIT_CLONE_DIRECTORY
 cd $GIT_CLONE_DIRECTORY
 # TODO: Test code: REMOVE! | sed '/test-/!d'
 ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | sed '/test-/!d' | xargs)
