@@ -43,7 +43,7 @@ CONCOURSE_TARGET=savannah
 ORIGINAL_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $payload)
 # TODO: This needs to be a parameter
 TEMPLATE_TOKEN=unmerged-branches-template
-TEMPLATE_GROUP=unmerged-branches-template
+DEV_BRANCHES_GROUP_NAME=unmerged-branches-template
 LOCAL_OR_CONCOURSE=CONCOURSE
 
 /opt/resource/set_dev_branches_pipeline.sh \
@@ -51,7 +51,7 @@ LOCAL_OR_CONCOURSE=CONCOURSE
     $ORIGINAL_PIPELINE_NAME \
     $LOCAL_OR_CONCOURSE \
     $TEMPLATE_TOKEN \
-    $TEMPLATE_GROUP \
+    $DEV_BRANCHES_GROUP_NAME \
     $ACTIVE_DEV_BRANCHES
 
 jq -n "{
