@@ -4,9 +4,9 @@ export_parameter_values() {
     #########
     # Concourse /
     #########
-    PARAM_CONCOURSE_URL=$(jq -r '.source.concourse_url // ""' < $PAYLOAD)
-    PARAM_CONCOURSE_USERNAME=$(jq -r '.source.concourse_username // ""' < $PAYLOAD)
-    PARAM_CONCOURSE_PASSWORD=$(jq -r '.source.concourse_password // ""' < $PAYLOAD)
+    export PARAM_CONCOURSE_URL=$(jq -r '.source.concourse_url // ""' < $PAYLOAD)
+    export PARAM_CONCOURSE_USERNAME=$(jq -r '.source.concourse_username // ""' < $PAYLOAD)
+    export PARAM_CONCOURSE_PASSWORD=$(jq -r '.source.concourse_password // ""' < $PAYLOAD)
     #########
     # / Concourse
     #########
