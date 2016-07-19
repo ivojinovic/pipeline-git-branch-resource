@@ -9,8 +9,7 @@ CONCOURSE_TARGET=$1
 ORIGINAL_PIPELINE_NAME=$2
 LOCAL_OR_CONCOURSE=$3
 TEMPLATE_TOKEN=$4
-DEV_BRANCHES_GROUP_NAME=$5
-BRANCH_LIST_PARAMS_INDEX=6
+BRANCH_LIST_PARAMS_INDEX=5
 
 if [ "$LOCAL_OR_CONCOURSE" == "LOCAL" ] ; then
     source ./../assets/branches_common.sh
@@ -28,22 +27,18 @@ get_lane_for_token original_pipeline.yaml $TEMPLATE_TOKEN lane_for_template.yaml
 get_lane_for_token original_pipeline.yaml update_unmerged_branches lane_for_updater.yaml
 
 # Get the group (job list) for each tabs
-get_group_for_token original_pipeline.yaml master master group_for_master.yaml
-get_group_for_token original_pipeline.yaml $DEV_BRANCHES_GROUP_NAME $TEMPLATE_TOKEN group_for_template.yaml
+get_group_by_name original_pipeline.yaml master group_for_master.yaml
+get_group_by_name original_pipeline.yaml $TEMPLATE_TOKEN group_for_template.yaml
 # TODO: 'unmerged-branches-updater' here needs to be a parameter
-get_group_for_token original_pipeline.yaml unmerged-branches-updater unmerged-branches-updater group_for_updater.yaml
+get_group_by_name original_pipeline.yaml unmerged-branches-updater group_for_updater.yaml
 
 # Merge the lane and the group for each tab
 spruce merge lane_for_master.yaml group_for_master.yaml > full_tab_for_master.yaml
 spruce merge lane_for_template.yaml group_for_template.yaml > full_tab_for_template.yaml
 spruce merge lane_for_updater.yaml group_for_updater.yaml > full_tab_for_updater.yaml
 
-# TODO: So, the term 'dev' comes from pipelines project... should go with that everywhere instead of 'unmerged branches'
 # Get a list of jobs placed in the dev branches template
-spruce json original_pipeline.yaml | \
-    jq --arg DEV_BRANCHES_GROUP_NAME $DEV_BRANCHES_GROUP_NAME '{"groups": [.["groups"][] | select(.name | contains($DEV_BRANCHES_GROUP_NAME))]}' | \
-    jq '{"jobs": .["groups"][0].jobs}' |
-    json2yaml > job_list_for_dev_template.yaml
+get_jobs_list_for_group original_pipeline.yaml $TEMPLATE_TOKEN job_list_for_dev_template.yaml
 
 #####
 # START - Use the template for each one of the branches passed in
@@ -88,6 +83,7 @@ done
 #####
 
 # Prepare the group node for unmerged branches
+# TODO: 'unmerged-branches' here needs to be a parameter
 printf "name: unmerged-branches\n" > group_node_for_all_dev_branches.yaml
 printf "jobs:\n" >> group_node_for_all_dev_branches.yaml
 # Prepare the main group pipeline we created

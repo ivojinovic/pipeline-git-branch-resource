@@ -37,7 +37,6 @@ fi
 cd $this_directory
 
 TEMPLATE_TOKEN=unmerged-branches-template
-DEV_BRANCHES_GROUP_NAME=unmerged-branches-template
 LOCAL_OR_CONCOURSE=LOCAL
 
 ./../assets/set_dev_branches_pipeline.sh \
@@ -45,5 +44,4 @@ LOCAL_OR_CONCOURSE=LOCAL
     $ORIGINAL_PIPELINE_NAME \
     $LOCAL_OR_CONCOURSE \
     $TEMPLATE_TOKEN \
-    $DEV_BRANCHES_GROUP_NAME \
     $ACTIVE_DEV_BRANCHES
