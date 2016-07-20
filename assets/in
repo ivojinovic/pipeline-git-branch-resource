@@ -38,12 +38,7 @@ LOC_CONCOURSE_TARGET=savannah
 echo -e "$PARAM_CONCOURSE_USERNAME\n$PARAM_CONCOURSE_PASSWORD\n" | fly -t $LOC_CONCOURSE_TARGET login --concourse-url $PARAM_CONCOURSE_URL
 
 # Create the pipeline for the active dev branches
-/opt/resource/set_dev_branches_pipeline.sh \
-    $LOC_CONCOURSE_TARGET \
-    $PARAM_APP_PIPELINE_NAME \
-    CONCOURSE \
-    $PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN \
-    $LOC_APP_DEV_BRANCHES
+/opt/resource/set_dev_branches_pipeline.sh $LOC_CONCOURSE_TARGET CONCOURSE $LOC_APP_DEV_BRANCHES
 
 jq -n "{
   version: {ref: $(echo $LOC_APP_DEV_BRANCHES | jq -R .)}
