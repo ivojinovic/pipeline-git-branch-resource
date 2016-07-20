@@ -1,4 +1,4 @@
-get_lane_for_token() {
+get_lane_for_group_name() {
     INPUT_FILE_NAME=$1
     JOBS_NAMES_KEY=$2
     OUTPUT_FILE_NAME=$3

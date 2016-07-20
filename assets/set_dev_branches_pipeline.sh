@@ -19,13 +19,13 @@ fi
 fly -t $CONCOURSE_TARGET get-pipeline -p $PARAM_APP_PIPELINE_NAME > original_pipeline.yaml
 
 # Get the full lane for each tab
-get_lane_for_token original_pipeline.yaml $PARAM_APP_MASTER_TOKEN lane_for_master.yaml
-get_lane_for_token original_pipeline.yaml $PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN lane_for_template.yaml
-get_lane_for_token original_pipeline.yaml $PARAM_APP_UPDATER_GROUP_NAME lane_for_updater.yaml
+get_lane_for_group_name original_pipeline.yaml $PARAM_APP_MASTER_GROUP_NAME lane_for_master.yaml
+get_lane_for_group_name original_pipeline.yaml $PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME lane_for_template.yaml
+get_lane_for_group_name original_pipeline.yaml $PARAM_APP_UPDATER_GROUP_NAME lane_for_updater.yaml
 
 # Get the group (job list) for each tabs
-get_group_by_name original_pipeline.yaml $PARAM_APP_MASTER_TOKEN group_for_master.yaml
-get_group_by_name original_pipeline.yaml $PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN group_for_template.yaml
+get_group_by_name original_pipeline.yaml $PARAM_APP_MASTER_GROUP_NAME group_for_master.yaml
+get_group_by_name original_pipeline.yaml $PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME group_for_template.yaml
 get_group_by_name original_pipeline.yaml $PARAM_APP_UPDATER_GROUP_NAME group_for_updater.yaml
 
 # Merge the lane and the group for each tab
@@ -34,7 +34,7 @@ spruce merge lane_for_template.yaml group_for_template.yaml > full_tab_for_templ
 spruce merge lane_for_updater.yaml group_for_updater.yaml > full_tab_for_updater.yaml
 
 # Get a list of jobs placed in the dev branches template
-get_jobs_list_for_group original_pipeline.yaml $PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN job_list_for_dev_template.yaml
+get_jobs_list_for_group original_pipeline.yaml $PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME job_list_for_dev_template.yaml
 
 #####
 # START - Use the template for each one of the branches passed in
@@ -53,11 +53,11 @@ do
     BRANCH_NAME_UNSLASHED=`echo $VAR | sed -e "s/\//-/g"`
 
     # Get branch name into the jobs/resources/group template
-    sed 's~'"$PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN"'~'"$BRANCH_NAME_UNSLASHED"'~g' full_tab_for_template.yaml > full_tab_for_branch.yaml
+    sed 's~'"$PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME"'~'"$BRANCH_NAME_UNSLASHED"'~g' full_tab_for_template.yaml > full_tab_for_branch.yaml
     printf "\n" >> full_tab_for_branch.yaml
 
     # Get branch name into the list of jobs for the main group
-    sed 's~'"$PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN"'~'"$BRANCH_NAME_UNSLASHED"'~g' job_list_for_dev_template.yaml > job_list_for_this_dev_branch.yaml
+    sed 's~'"$PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME"'~'"$BRANCH_NAME_UNSLASHED"'~g' job_list_for_dev_template.yaml > job_list_for_this_dev_branch.yaml
     printf "\n" >> job_list_for_this_dev_branch.yaml
 
     # now add the branch pipeline to the pipeline of all branches
