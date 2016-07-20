@@ -16,8 +16,9 @@ cd $APP_NAME
 
 export PARAM_APP_PIPELINE_NAME=jarvis_api_test
 export PARAM_APP_MASTER_GROUP=master
+export PARAM_APP_UPDATER_GROUP=dev-updater
+
 export PARAM_APP_DEV_TEMPLATE_GROUP=dev-template
-export PARAM_APP_DEV_UPDATER_GROUP=dev-updater
 export PARAM_APP_DEV_ALL_BRANCHES_GROUP=dev-all
 export PARAM_APP_DEV_BRANCH_FILTER='sed /test-/!d'
 
