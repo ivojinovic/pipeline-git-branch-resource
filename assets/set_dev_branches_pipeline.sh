@@ -80,15 +80,7 @@ done
 # END - Use the template for each one of the branches passed in
 #####
 
-# Prepare the group node for unmerged branches
-printf "name: $PARAM_APP_UPDATER_GROUP_NAME_NEW\n" > group_node_for_all_dev_branches.yaml
-printf "jobs:\n" >> group_node_for_all_dev_branches.yaml
-# Prepare the main group pipeline we created
-sed 's~jobs:~~g' job_list_for_all_dev_branches.yaml > job_list_for_all_dev_branches_clean.yaml
-# Add it to the group node
-cat job_list_for_all_dev_branches_clean.yaml >> group_node_for_all_dev_branches.yaml
-# Wrap the node into a group
-spruce json group_node_for_all_dev_branches.yaml | jq '{"groups": [.]}' | json2yaml > group_for_all_dev_branches.yaml
+get_group_for_all_dev_branches job_list_for_all_dev_branches.yaml group_for_all_dev_branches.yaml
 
 # Finally, merge all the tabs together
 spruce merge \

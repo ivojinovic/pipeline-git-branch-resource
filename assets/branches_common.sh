@@ -80,3 +80,12 @@ pipeline_has_correct_groups() {
         echo "false" > $OUTPUT_FILE
     fi
 }
+
+get_group_for_all_dev_branches() {
+    INPUT_FILE=$1
+    OUTPUT_FILE=$2
+
+    printf "name: $PARAM_APP_UPDATER_GROUP_NAME_NEW\njobs:\n" > group_node_for_all_dev_branches.yaml
+    sed 's~jobs:~~g' $INPUT_FILE >> group_node_for_all_dev_branches.yaml
+    spruce json group_node_for_all_dev_branches.yaml | jq '{"groups": [.]}' | json2yaml > $OUTPUT_FILE
+}
