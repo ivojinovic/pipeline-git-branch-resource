@@ -15,20 +15,20 @@ else
     source /opt/resource/branches_common.sh
 fi
 
+LOC_APP_MASTER_TOKEN=master
+
 # Get the original pipeline
 fly -t $CONCOURSE_TARGET get-pipeline -p $PARAM_APP_PIPELINE_NAME > original_pipeline.yaml
 
 # Get the full lane for each tab
-get_lane_for_token original_pipeline.yaml master lane_for_master.yaml
+get_lane_for_token original_pipeline.yaml $LOC_APP_MASTER_TOKEN lane_for_master.yaml
 get_lane_for_token original_pipeline.yaml $PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN lane_for_template.yaml
-# TODO: 'update_unmerged_branches' here needs to be a parameter
-get_lane_for_token original_pipeline.yaml update_unmerged_branches lane_for_updater.yaml
+get_lane_for_token original_pipeline.yaml $PARAM_APP_UPDATER_TOKEN lane_for_updater.yaml
 
 # Get the group (job list) for each tabs
-get_group_by_name original_pipeline.yaml master group_for_master.yaml
+get_group_by_name original_pipeline.yaml $LOC_APP_MASTER_TOKEN group_for_master.yaml
 get_group_by_name original_pipeline.yaml $PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN group_for_template.yaml
-# TODO: 'unmerged-branches-updater' here needs to be a parameter
-get_group_by_name original_pipeline.yaml unmerged-branches-updater group_for_updater.yaml
+get_group_by_name original_pipeline.yaml $PARAM_APP_UPDATER_GROUP_NAME group_for_updater.yaml
 
 # Merge the lane and the group for each tab
 spruce merge lane_for_master.yaml group_for_master.yaml > full_tab_for_master.yaml
@@ -81,8 +81,7 @@ done
 #####
 
 # Prepare the group node for unmerged branches
-# TODO: 'unmerged-branches' here needs to be a parameter
-printf "name: unmerged-branches\n" > group_node_for_all_dev_branches.yaml
+printf "name: $PARAM_APP_UPDATER_GROUP_NAME_NEW\n" > group_node_for_all_dev_branches.yaml
 printf "jobs:\n" >> group_node_for_all_dev_branches.yaml
 # Prepare the main group pipeline we created
 sed 's~jobs:~~g' job_list_for_all_dev_branches.yaml > job_list_for_all_dev_branches_clean.yaml

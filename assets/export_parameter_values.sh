@@ -25,6 +25,13 @@ export_parameter_values() {
     export PARAM_APP_BRANCH_FILTER_PIPE='sed /test-/!d'
     # TODO: This needs to be a parameter
     export PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN=unmerged-branches-template
+    # TODO: This needs to be a parameter
+    export PARAM_APP_UPDATER_TOKEN=update_unmerged_branches
+
+    # TODO: This needs to be a parameter
+    export PARAM_APP_UPDATER_GROUP_NAME=unmerged-branches-updater
+    # TODO: This needs to be a parameter
+    export PARAM_APP_UPDATER_GROUP_NAME_NEW=unmerged-branches
 
     export CONST_APP_GIT_DIR=$TMPDIR/git-resource-repo-cache-1
     export CONST_APP_GROUP_CHECK_OUTPUT_FILE=/opt/resource/pipeline_has_correct_groups.out
