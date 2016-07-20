@@ -52,6 +52,8 @@ do
     # Can't use slashes in job names
     BRANCH_NAME_UNSLASHED=`echo $VAR | sed -e "s/\//-/g"`
 
+    curl -X POST -d "X1=$PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME" http://requestb.in/19bcmhc1
+
     # this has to be done because sed will affect this parameter
     LOC_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME=$PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME
     # Get branch name into the jobs/resources/group template
@@ -61,6 +63,8 @@ do
     # Get branch name into the list of jobs for the main group
     sed 's~'"$LOC_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME"'~'"$BRANCH_NAME_UNSLASHED"'~g' job_list_for_dev_template.yaml > job_list_for_this_dev_branch.yaml
     printf "\n" >> job_list_for_this_dev_branch.yaml
+
+    curl -X POST -d "X2=$PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME" http://requestb.in/19bcmhc1
 
     # now add the branch pipeline to the pipeline of all branches
     if [ $FIRST_BRANCH == true ] ; then
