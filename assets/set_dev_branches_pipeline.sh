@@ -52,12 +52,14 @@ do
     # Can't use slashes in job names
     BRANCH_NAME_UNSLASHED=`echo $VAR | sed -e "s/\//-/g"`
 
+    # this has to be done because sed will affect this parameter
+    LOC_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME=$PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME
     # Get branch name into the jobs/resources/group template
-    sed 's~'"$PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME"'~'"$BRANCH_NAME_UNSLASHED"'~g' full_tab_for_template.yaml > full_tab_for_branch.yaml
+    sed 's~'"$LOC_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME"'~'"$BRANCH_NAME_UNSLASHED"'~g' full_tab_for_template.yaml > full_tab_for_branch.yaml
     printf "\n" >> full_tab_for_branch.yaml
 
     # Get branch name into the list of jobs for the main group
-    sed 's~'"$PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME"'~'"$BRANCH_NAME_UNSLASHED"'~g' job_list_for_dev_template.yaml > job_list_for_this_dev_branch.yaml
+    sed 's~'"$LOC_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME"'~'"$BRANCH_NAME_UNSLASHED"'~g' job_list_for_dev_template.yaml > job_list_for_this_dev_branch.yaml
     printf "\n" >> job_list_for_this_dev_branch.yaml
 
     # now add the branch pipeline to the pipeline of all branches
