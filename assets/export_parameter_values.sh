@@ -21,8 +21,6 @@ export_parameter_values() {
     export PARAM_APP_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $PAYLOAD)
     # TODO: This needs to be a parameter
     export PARAM_APP_BRANCH_FILTER_PIPE='sed /test-/!d'
-    # TODO: This needs to be a parameter
-    export PARAM_APP_UPDATER_TOKEN=update_unmerged_branches
 
     # TODO: This needs to be a parameter
     export PARAM_APP_MASTER_TOKEN=master
