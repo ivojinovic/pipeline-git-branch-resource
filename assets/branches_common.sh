@@ -58,6 +58,7 @@ clone_git_repo_into_directory() {
 pipeline_has_correct_groups() {
     STATIC_GROUPS=$1
     APP_DEV_BRANCHES=$2
+    APP_HOT_BRANCHES=$3
     OUTPUT_FILE=$3
 
     echo "true" > $OUTPUT_FILE
@@ -71,6 +72,9 @@ pipeline_has_correct_groups() {
     EXPECTED_PIPELINE_GROUPS="$STATIC_GROUPS"
     if [ -n "${APP_DEV_BRANCHES}" ]; then
         EXPECTED_PIPELINE_GROUPS="$STATIC_GROUPS $APP_DEV_BRANCHES"
+    fi
+    if [ -n "${APP_HOT_BRANCHES}" ]; then
+        EXPECTED_PIPELINE_GROUPS="$STATIC_GROUPS $APP_HOT_BRANCHES"
     fi
 
     # Debug code

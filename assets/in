@@ -36,14 +36,20 @@ if [ -n "${PARAM_APP_DEV_BRANCH_FILTER}" ]; then
 else
     LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 fi
+if [ -n "${PARAM_APP_HOT_BRANCH_FILTER}" ]; then
+    LOC_APP_HOT_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_HOT_BRANCH_FILTER | xargs)
+else
+    LOC_APP_HOT_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
+fi
 
 # Log in to concourse
 LOC_CONCOURSE_TARGET=savannah
 echo -e "$PARAM_CONCOURSE_USERNAME\n$PARAM_CONCOURSE_PASSWORD\n" | fly -t $LOC_CONCOURSE_TARGET login --concourse-url $PARAM_CONCOURSE_URL
 
 # Create the pipeline for the active dev branches
-/opt/resource/set_dev_branches_pipeline.sh $LOC_CONCOURSE_TARGET CONCOURSE $LOC_APP_DEV_BRANCHES
+/opt/resource/set_dev_branches_pipeline.sh $LOC_CONCOURSE_TARGET CONCOURSE "$LOC_APP_DEV_BRANCHES" "$LOC_APP_HOT_BRANCHES"
 
+LOC_REF="$LOC_APP_DEV_BRANCHES $LOC_APP_HOT_BRANCHES"
 jq -n "{
-  version: {ref: $(echo $LOC_APP_DEV_BRANCHES | jq -R .)}
+  version: {ref: $(echo $LOC_REF | jq -R .)}
 }" >&3

@@ -22,13 +22,22 @@ export PARAM_APP_DEV_TEMPLATE_GROUP=dev-template
 export PARAM_APP_DEV_ALL_BRANCHES_GROUP=dev-all
 export PARAM_APP_DEV_BRANCH_FILTER='sed /test-/!d'
 
+export PARAM_APP_HOT_TEMPLATE_GROUP=hot-template
+export PARAM_APP_HOT_ALL_BRANCHES_GROUP=hot-all
+export PARAM_APP_HOT_BRANCH_FILTER='sed /test-hotfix-/!d'
+
 if [ -n "${PARAM_APP_DEV_BRANCH_FILTER}" ]; then
     LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_DEV_BRANCH_FILTER | xargs)
 else
     LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 fi
+if [ -n "${PARAM_APP_HOT_BRANCH_FILTER}" ]; then
+    LOC_APP_HOT_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_HOT_BRANCH_FILTER | xargs)
+else
+    LOC_APP_HOT_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
+fi
 
 # Create a pipeline for them
 cd $this_directory
 
-./../assets/set_dev_branches_pipeline.sh $CONCOURSE_TARGET LOCAL $LOC_APP_DEV_BRANCHES
+./../assets/set_dev_branches_pipeline.sh $CONCOURSE_TARGET LOCAL "$LOC_APP_DEV_BRANCHES" "$LOC_APP_HOT_BRANCHES"
