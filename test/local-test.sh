@@ -19,10 +19,10 @@ export PARAM_APP_MASTER_GROUP_NAME=master
 export PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME=unmerged-branches-template
 export PARAM_APP_UPDATER_GROUP_NAME=unmerged-branches-updater
 export PARAM_APP_ALL_DEV_BRANCHES_GROUP_NAME=unmerged-branches
-export PARAM_APP_BRANCH_FILTER_PIPE='sed /test-/!d'
+export PARAM_APP_BRANCH_FILTER='sed /test-/!d'
 
-if [ -n "${PARAM_APP_BRANCH_FILTER_PIPE}" ]; then
-    LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_BRANCH_FILTER_PIPE | xargs)
+if [ -n "${PARAM_APP_BRANCH_FILTER}" ]; then
+    LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_BRANCH_FILTER | xargs)
 else
     LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 fi

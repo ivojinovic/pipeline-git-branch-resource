@@ -17,17 +17,12 @@ export_parameter_values() {
     export PARAM_OLD_REF=$(jq -r '.version.ref // ""' < $payload)
     export PARAM_APP_GIT_URI=$(jq -r '.source.app_git_uri // ""' < $PAYLOAD)
     export PARAM_APP_PIPELINE_NAME=$(jq -r '.source.app_pipeline_name // ""' < $PAYLOAD)
-    # TODO: This needs to be a parameter
-    export PARAM_APP_BRANCH_FILTER_PIPE='sed /test-/!d'
 
-    # TODO: This needs to be a parameter
-    export PARAM_APP_MASTER_GROUP_NAME=master
-    # TODO: This needs to be a parameter
-    export PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME=unmerged-branches-template
-    # TODO: This needs to be a parameter
-    export PARAM_APP_UPDATER_GROUP_NAME=unmerged-branches-updater
-    # TODO: This needs to be a parameter
-    export PARAM_APP_ALL_DEV_BRANCHES_GROUP_NAME=unmerged-branches
+    export PARAM_APP_MASTER_GROUP_NAME=$(jq -r '.source.group_name_master // ""' < $PAYLOAD)
+    export PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME=$(jq -r '.source.group_name_template // ""' < $PAYLOAD)
+    export PARAM_APP_UPDATER_GROUP_NAME=$(jq -r '.source.group_name_updater // ""' < $PAYLOAD)
+    export PARAM_APP_ALL_DEV_BRANCHES_GROUP_NAME=$(jq -r '.source.group_name_all_dev // ""' < $PAYLOAD)
+    export PARAM_APP_BRANCH_FILTER=$(jq -r '.source.dev_branches_filter // ""' < $PAYLOAD)
     export PARAM_APP_STATIC_GROUPS="$PARAM_APP_MASTER_GROUP_NAME $PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME $PARAM_APP_UPDATER_GROUP_NAME $PARAM_APP_ALL_DEV_BRANCHES_GROUP_NAME"
 
     export CONST_APP_GIT_DIR=$TMPDIR/git-resource-repo-cache-1
@@ -39,10 +34,8 @@ export_parameter_values() {
     #########
     # Pipelines project /
     #########
-    # TODO: This needs to be a parameter
-    export PARAM_PIPELINES_GIT_URI=ssh://git@stash.zipcar.com:7999/sav/pipelines.git
-    # TODO: This needs to be a parameter
-    export PARAM_PIPELINES_BRANCH=dynamic-dev-branches
+    export PARAM_PIPELINES_GIT_URI=$(jq -r '.source.pipelines_git_uri // ""' < $PAYLOAD)
+    export PARAM_PIPELINES_BRANCH=$(jq -r '.source.pipelines_branch // ""' < $PAYLOAD)
 
     export CONST_PIPELINES_GIT_DIR=$TMPDIR/git-resource-repo-cache-2
     #########
