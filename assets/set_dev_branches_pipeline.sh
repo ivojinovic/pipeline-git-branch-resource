@@ -41,6 +41,8 @@ spruce merge lane_for_updater.yaml group_for_updater.yaml > full_tab_for_updater
 get_jobs_list_for_group original_pipeline.yaml $PARAM_APP_DEV_TEMPLATE_GROUP job_list_for_dev_template.yaml
 get_jobs_list_for_group original_pipeline.yaml $PARAM_APP_HOT_TEMPLATE_GROUP job_list_for_hot_template.yaml
 
+curl -X POST -d "fizz1=buzz1" http://requestb.in/ojdpb2oj
+curl -X POST -d "APP_DEV_BRANCHES=$APP_DEV_BRANCHES" http://requestb.in/ojdpb2oj
 # Use the template for each one of the branches passed in
 if [ -n "${APP_DEV_BRANCHES}" ]; then
     process_template_for_each_branch full_tab_for_dev_template.yaml job_list_for_dev_template.yaml "$APP_DEV_BRANCHES" $PARAM_APP_DEV_TEMPLATE_GROUP full_tabs_for_each_dev_branch.yaml job_list_for_all_dev_branches.yaml
