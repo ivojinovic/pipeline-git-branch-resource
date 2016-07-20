@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 
 CONCOURSE_TARGET=savannah
-PROJECT_NAME=jarvis_api
-PROJECT_GIT_URI=ssh://git@stash.zipcar.com:7999/cheet/jarvis_api.git
+APP_NAME=jarvis_api
+APP_GIT_URI=ssh://git@stash.zipcar.com:7999/cheet/jarvis_api.git
 
 this_directory=`pwd`
 
 # Get the list of active dev branches
 cd ~/concourse/git/test/
-if [ -d "$PROJECT_NAME" ]; then
-    rm -Rf $PROJECT_NAME
+if [ -d "$APP_NAME" ]; then
+    rm -Rf $APP_NAME
 fi
-git clone $PROJECT_GIT_URI
-cd $PROJECT_NAME
+git clone $APP_GIT_URI
+cd $APP_NAME
 
 export PARAM_APP_PIPELINE_NAME=jarvis_api_test
 export PARAM_APP_MASTER_GROUP_NAME=master

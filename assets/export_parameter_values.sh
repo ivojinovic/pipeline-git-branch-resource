@@ -15,10 +15,8 @@ export_parameter_values() {
     # App /
     #########
     export PARAM_OLD_REF=$(jq -r '.version.ref // ""' < $payload)
-    # TODO: source param should be 'app', not 'project'
-    export PARAM_APP_GIT_URI=$(jq -r '.source.project_git_uri // ""' < $PAYLOAD)
-    # TODO: source param should be 'app', not 'project'
-    export PARAM_APP_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $PAYLOAD)
+    export PARAM_APP_GIT_URI=$(jq -r '.source.app_git_uri // ""' < $PAYLOAD)
+    export PARAM_APP_PIPELINE_NAME=$(jq -r '.source.app_pipeline // ""' < $PAYLOAD)
     # TODO: This needs to be a parameter
     export PARAM_APP_BRANCH_FILTER_PIPE='sed /test-/!d'
 
