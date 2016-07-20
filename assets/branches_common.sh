@@ -57,9 +57,9 @@ clone_git_repo_into_directory() {
 
 pipeline_has_correct_groups() {
     STATIC_GROUPS=$1
-    APP_DEV_BRANCHES=$2
-    APP_HOT_BRANCHES=$3
-    OUTPUT_FILE=$3
+    OUTPUT_FILE=$2
+    APP_DEV_BRANCHES=$3
+    APP_HOT_BRANCHES=$4
 
     echo "true" > $OUTPUT_FILE
 
