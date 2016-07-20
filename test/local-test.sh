@@ -16,9 +16,9 @@ cd $APP_NAME
 
 export PARAM_APP_PIPELINE_NAME=jarvis_api_test
 export PARAM_APP_MASTER_GROUP_NAME=master
-export PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME=unmerged-branches-template
-export PARAM_APP_UPDATER_GROUP_NAME=unmerged-branches-updater
-export PARAM_APP_ALL_DEV_BRANCHES_GROUP_NAME=unmerged-branches
+export PARAM_APP_DEV_TEMPLATE_GROUP=dev-template
+export PARAM_APP_UPDATER_GROUP_NAME=dev-updater
+export PARAM_APP_ALL_DEV_BRANCHES_GROUP_NAME=dev-all
 export PARAM_APP_BRANCH_FILTER='sed /test-/!d'
 
 if [ -n "${PARAM_APP_BRANCH_FILTER}" ]; then
