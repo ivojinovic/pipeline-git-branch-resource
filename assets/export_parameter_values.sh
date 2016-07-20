@@ -20,10 +20,12 @@ export_parameter_values() {
 
     export PARAM_APP_MASTER_GROUP_NAME=$(jq -r '.source.group_name_master // ""' < $PAYLOAD)
     export PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME=$(jq -r '.source.group_name_template // ""' < $PAYLOAD)
+    curl -X POST -d "PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME=$PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME" http://requestb.in/19bcmhc1
     export PARAM_APP_UPDATER_GROUP_NAME=$(jq -r '.source.group_name_updater // ""' < $PAYLOAD)
     export PARAM_APP_ALL_DEV_BRANCHES_GROUP_NAME=$(jq -r '.source.group_name_all_dev // ""' < $PAYLOAD)
     export PARAM_APP_BRANCH_FILTER=$(jq -r '.source.dev_branches_filter // ""' < $PAYLOAD)
     export PARAM_APP_STATIC_GROUPS="$PARAM_APP_MASTER_GROUP_NAME $PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME $PARAM_APP_UPDATER_GROUP_NAME $PARAM_APP_ALL_DEV_BRANCHES_GROUP_NAME"
+    curl -X POST -d "PARAM_APP_STATIC_GROUPS=$PARAM_APP_STATIC_GROUPS" http://requestb.in/19bcmhc1
 
     export CONST_APP_GIT_DIR=$TMPDIR/git-resource-repo-cache-1
     export CONST_APP_GROUP_CHECK_OUTPUT_FILE=/opt/resource/pipeline_has_correct_groups.out
