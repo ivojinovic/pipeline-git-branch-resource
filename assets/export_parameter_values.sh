@@ -19,7 +19,7 @@ export_parameter_values() {
     export PARAM_APP_PIPELINE_NAME=$(jq -r '.source.app_pipeline_name // ""' < $PAYLOAD)
 
     export PARAM_APP_MASTER_GROUP_NAME=$(jq -r '.source.group_name_master // ""' < $PAYLOAD)
-    export PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME=$(jq -r '.source.group_name_template // ""' < $PAYLOAD)
+    export PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME=unmerged-branches-template #$(jq -r '.source.group_name_template // ""' < $PAYLOAD)
     curl -X POST -d "PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME=$PARAM_APP_DEV_BRANCHES_TEMPLATE_GROUP_NAME" http://requestb.in/19bcmhc1
     export PARAM_APP_UPDATER_GROUP_NAME=$(jq -r '.source.group_name_updater // ""' < $PAYLOAD)
     export PARAM_APP_ALL_DEV_BRANCHES_GROUP_NAME=$(jq -r '.source.group_name_all_dev // ""' < $PAYLOAD)
