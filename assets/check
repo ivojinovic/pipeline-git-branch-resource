@@ -35,7 +35,7 @@ git checkout $PARAM_PIPELINES_BRANCH
 LOC_PIPELINES_BRANCH_LAST_COMMIT=$(git rev-parse HEAD)
 
 # Check if the current pipeline has the groups it should have (in other words: was it recently repipied and the dev branches haven't been expanded yet)
-/opt/resource/pipeline_has_correct_groups.sh "$PARAM_APP_STATIC_GROUPS" "$LOC_APP_DEV_BRANCHES" $CONST_APP_GROUP_CHECK_OUTPUT_FILE
+pipeline_has_correct_groups "$PARAM_APP_STATIC_GROUPS" "$LOC_APP_DEV_BRANCHES" $CONST_APP_GROUP_CHECK_OUTPUT_FILE
 LOC_APP_PIPELINE_HAS_CORRECT_GROUPS=`cat $CONST_APP_GROUP_CHECK_OUTPUT_FILE`
 
 # Now, put it all together

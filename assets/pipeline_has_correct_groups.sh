@@ -6,10 +6,10 @@ OUTPUT_FILE=$3
 
 echo "true" > $OUTPUT_FILE
 
-CONCOURSE_TARGET=savannah
-echo -e "$PARAM_CONCOURSE_USERNAME\n$PARAM_CONCOURSE_PASSWORD\n" | fly -t $CONCOURSE_TARGET login --concourse-url $PARAM_CONCOURSE_URL
+LOC_CONCOURSE_TARGET=savannah
+echo -e "$PARAM_CONCOURSE_USERNAME\n$PARAM_CONCOURSE_PASSWORD\n" | fly -t $LOC_CONCOURSE_TARGET login --concourse-url $PARAM_CONCOURSE_URL
 
-fly -t $CONCOURSE_TARGET get-pipeline -p $PARAM_APP_PIPELINE_NAME > current_pipeline.yaml
+fly -t $LOC_CONCOURSE_TARGET get-pipeline -p $PARAM_APP_PIPELINE_NAME > current_pipeline.yaml
 CURRENT_PIPELINE_GROUPS=$(spruce json current_pipeline.yaml | jq '.["groups"][].name' | xargs)
 
 EXPECTED_PIPELINE_GROUPS="$STATIC_GROUPS"
