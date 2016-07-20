@@ -18,7 +18,7 @@ export_parameter_values() {
     export PARAM_APP_GIT_URI=$(jq -r '.source.app_git_uri // ""' < $PAYLOAD)
     export PARAM_APP_PIPELINE_NAME=$(jq -r '.source.app_pipeline_name // ""' < $PAYLOAD)
 
-    export PARAM_APP_MASTER_GROUP_NAME=$(jq -r '.source.group_name_master // ""' < $PAYLOAD)
+    export PARAM_APP_MASTER_GROUP_NAME=$(jq -r '.source.group_master // ""' < $PAYLOAD)
 
     PARAM_APP_DEV_TEMPLATE_GROUP_1=$(jq -r '.source.group_dev_template_1 // ""' < $PAYLOAD)
     PARAM_APP_DEV_TEMPLATE_GROUP_2=$(jq -r '.source.group_dev_template_2 // ""' < $PAYLOAD)
