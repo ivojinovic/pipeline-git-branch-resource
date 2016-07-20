@@ -15,18 +15,16 @@ else
     source /opt/resource/branches_common.sh
 fi
 
-LOC_APP_MASTER_TOKEN=master
-
 # Get the original pipeline
 fly -t $CONCOURSE_TARGET get-pipeline -p $PARAM_APP_PIPELINE_NAME > original_pipeline.yaml
 
 # Get the full lane for each tab
-get_lane_for_token original_pipeline.yaml $LOC_APP_MASTER_TOKEN lane_for_master.yaml
+get_lane_for_token original_pipeline.yaml $PARAM_APP_MASTER_TOKEN lane_for_master.yaml
 get_lane_for_token original_pipeline.yaml $PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN lane_for_template.yaml
 get_lane_for_token original_pipeline.yaml $PARAM_APP_UPDATER_TOKEN lane_for_updater.yaml
 
 # Get the group (job list) for each tabs
-get_group_by_name original_pipeline.yaml $LOC_APP_MASTER_TOKEN group_for_master.yaml
+get_group_by_name original_pipeline.yaml $PARAM_APP_MASTER_TOKEN group_for_master.yaml
 get_group_by_name original_pipeline.yaml $PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN group_for_template.yaml
 get_group_by_name original_pipeline.yaml $PARAM_APP_UPDATER_GROUP_NAME group_for_updater.yaml
 

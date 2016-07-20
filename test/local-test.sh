@@ -15,10 +15,11 @@ git clone $PROJECT_GIT_URI
 cd $PROJECT_NAME
 
 export PARAM_APP_PIPELINE_NAME=jarvis_api_test
+export PARAM_APP_MASTER_TOKEN=master
 export PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN=unmerged-branches-template
 export PARAM_APP_UPDATER_TOKEN=update_unmerged_branches
 export PARAM_APP_UPDATER_GROUP_NAME=unmerged-branches-updater
-export PARAM_APP_UPDATER_GROUP_NAME_NEW=unmerged-branches
+export PARAM_APP_ALL_DEV_BRANCHES_GROUP_NAME=unmerged-branches
 export PARAM_APP_BRANCH_FILTER_PIPE='sed /test-/!d'
 
 LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_BRANCH_FILTER_PIPE | xargs)

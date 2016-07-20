@@ -20,18 +20,19 @@ export_parameter_values() {
     # TODO: source param should be 'app', not 'project'
     export PARAM_APP_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $PAYLOAD)
     # TODO: This needs to be a parameter
-    export PARAM_APP_STATIC_GROUPS="master unmerged-branches-template unmerged-branches-updater unmerged-branches"
-    # TODO: This needs to be a parameter
     export PARAM_APP_BRANCH_FILTER_PIPE='sed /test-/!d'
-    # TODO: This needs to be a parameter
-    export PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN=unmerged-branches-template
     # TODO: This needs to be a parameter
     export PARAM_APP_UPDATER_TOKEN=update_unmerged_branches
 
     # TODO: This needs to be a parameter
+    export PARAM_APP_MASTER_TOKEN=master
+    # TODO: This needs to be a parameter
+    export PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN=unmerged-branches-template
+    # TODO: This needs to be a parameter
     export PARAM_APP_UPDATER_GROUP_NAME=unmerged-branches-updater
     # TODO: This needs to be a parameter
-    export PARAM_APP_UPDATER_GROUP_NAME_NEW=unmerged-branches
+    export PARAM_APP_ALL_DEV_BRANCHES_GROUP_NAME=unmerged-branches
+    export PARAM_APP_STATIC_GROUPS="$PARAM_APP_MASTER_TOKEN $PARAM_APP_DEV_BRANCHES_TEMPLATE_TOKEN $PARAM_APP_UPDATER_GROUP_NAME $PARAM_APP_ALL_DEV_BRANCHES_GROUP_NAME"
 
     export CONST_APP_GIT_DIR=$TMPDIR/git-resource-repo-cache-1
     export CONST_APP_GROUP_CHECK_OUTPUT_FILE=/opt/resource/pipeline_has_correct_groups.out
