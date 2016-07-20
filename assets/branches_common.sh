@@ -85,11 +85,52 @@ pipeline_has_correct_groups() {
     fi
 }
 
-get_group_for_all_dev_branches() {
+get_group_for_all_branches() {
     INPUT_FILE=$1
-    OUTPUT_FILE=$2
+    APP_ALL_BRANCHES_GROUP=$2
+    OUTPUT_FILE=$3
 
-    printf "name: $PARAM_APP_DEV_ALL_BRANCHES_GROUP\njobs:\n" > group_node_for_all_dev_branches.yaml
-    sed 's~jobs:~~g' $INPUT_FILE >> group_node_for_all_dev_branches.yaml
-    spruce json group_node_for_all_dev_branches.yaml | jq '{"groups": [.]}' | json2yaml > $OUTPUT_FILE
+    printf "name: $APP_ALL_BRANCHES_GROUP\njobs:\n" > group_node_for_all_branches.yaml
+    sed 's~jobs:~~g' $INPUT_FILE >> group_node_for_all_branches.yaml
+    spruce json group_node_for_all_branches.yaml | jq '{"groups": [.]}' | json2yaml > $OUTPUT_FILE
+}
+
+process_template_for_each_branch() {
+    FULL_TAB_FOR_TEMPLATE_FILE=$1
+    JOB_LIST_FOR_TEMPLATE_FILE=$2
+    APP_BRANCHES=$3
+    APP_TEMPLATE_GROUP=$4
+    FULL_TABS_FOR_EACH_BRANCH_FILE=$5
+    JOB_LIST_FOR_ALL_BRANCHES_FILE=$6
+
+    IFS=' ' read -r -a APP_BRANCHES_ARRAY <<< "$APP_BRANCHES"
+
+    FIRST_BRANCH=true
+    for BRANCH_NAME in "${APP_BRANCHES_ARRAY[@]}"
+    do
+        # Can't use slashes in job names
+        BRANCH_NAME_UNSLASHED=`echo $BRANCH_NAME | sed -e "s/\//-/g"`
+
+        # Get branch name into the jobs/resources/group template
+        sed 's~'"$APP_TEMPLATE_GROUP"'~'"$BRANCH_NAME_UNSLASHED"'~g' $FULL_TAB_FOR_TEMPLATE_FILE > full_tab_for_branch.yaml
+        printf "\n" >> full_tab_for_branch.yaml
+
+        # Get branch name into the list of jobs for the main group
+        sed 's~'"$APP_TEMPLATE_GROUP"'~'"$BRANCH_NAME_UNSLASHED"'~g' $JOB_LIST_FOR_TEMPLATE_FILE > job_list_for_this_branch.yaml
+        printf "\n" >> job_list_for_this_branch.yaml
+
+        # now add the branch pipeline to the pipeline of all branches
+        if [ $FIRST_BRANCH == true ] ; then
+            FIRST_BRANCH=false
+            echo "Starting with $BRANCH_NAME_UNSLASHED"
+            spruce merge full_tab_for_branch.yaml > $FULL_TABS_FOR_EACH_BRANCH_FILE
+            # do the same for the main group section
+            spruce merge job_list_for_this_branch.yaml > $JOB_LIST_FOR_ALL_BRANCHES_FILE
+        else
+            echo "Adding Branch $BRANCH_NAME_UNSLASHED"
+            spruce merge $FULL_TABS_FOR_EACH_BRANCH_FILE full_tab_for_branch.yaml >> $FULL_TABS_FOR_EACH_BRANCH_FILE
+            # do the same for the main group section
+            spruce merge $JOB_LIST_FOR_ALL_BRANCHES_FILE job_list_for_this_branch.yaml >> $JOB_LIST_FOR_ALL_BRANCHES_FILE
+        fi
+    done
 }
