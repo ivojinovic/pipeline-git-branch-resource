@@ -21,7 +21,11 @@ export PARAM_APP_UPDATER_GROUP_NAME=unmerged-branches-updater
 export PARAM_APP_ALL_DEV_BRANCHES_GROUP_NAME=unmerged-branches
 export PARAM_APP_BRANCH_FILTER_PIPE='sed /test-/!d'
 
-LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_BRANCH_FILTER_PIPE | xargs)
+if [ -n "${PARAM_APP_BRANCH_FILTER_PIPE}" ]; then
+    LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_BRANCH_FILTER_PIPE | xargs)
+else
+    LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
+fi
 
 # Create a pipeline for them
 cd $this_directory
