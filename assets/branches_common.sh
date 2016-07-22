@@ -47,12 +47,9 @@ clone_git_repo_into_directory() {
     DIRECTORY=$2
 
     if [ -d $DIRECTORY ]; then
-      cd $DIRECTORY
-      git fetch
-      git reset --hard FETCH_HEAD
-    else
-      git clone $REPO_URL $DIRECTORY
+      rm -rF $DIRECTORY
     fi
+    git clone $REPO_URL $DIRECTORY
 }
 
 pipeline_has_correct_groups() {
