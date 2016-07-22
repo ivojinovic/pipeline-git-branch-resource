@@ -47,7 +47,7 @@ clone_git_repo_into_directory() {
     DIRECTORY=$2
 
     if [ -d $DIRECTORY ]; then
-      rm -rF $DIRECTORY
+      rm -Rf $DIRECTORY
     fi
     git clone $REPO_URL $DIRECTORY
 }
