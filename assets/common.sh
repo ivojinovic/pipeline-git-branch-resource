@@ -3,7 +3,7 @@ export TMPDIR=${TMPDIR:-/tmp}
 load_pubkey() {
   local private_key_path=$TMPDIR/git-resource-private-key
 
-  (jq -r '.source.project_git_key // empty' < $1) > $private_key_path
+  (jq -r '.source.app_git_key // empty' < $1) > $private_key_path
 
   if [ -s $private_key_path ]; then
     chmod 0600 $private_key_path

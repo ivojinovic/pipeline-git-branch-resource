@@ -6,122 +6,65 @@ rm *.yaml
 set -e
 
 CONCOURSE_TARGET=$1
-ORIGINAL_PIPELINE_NAME=$2
-NEW_PIPELINE_SUFFIX=$3
-LOCAL_OR_CONCOURSE=$4
-TEMPLATE_TOKEN=$5
-TEMPLATE_GROUP=$6
-BRANCH_LIST_PARAMS_INDEX=7
+LOCAL_OR_CONCOURSE=$2
+APP_DEV_BRANCHES=$3
+APP_HOT_BRANCHES=$4
 
 if [ "$LOCAL_OR_CONCOURSE" == "LOCAL" ] ; then
-    COMMAND_PREFIX=./../assets
+    source ./../assets/branches_common.sh
 else
-    COMMAND_PREFIX=/opt/resource
+    source /opt/resource/branches_common.sh
 fi
 
 # Get the original pipeline
-fly -t $CONCOURSE_TARGET get-pipeline -p $ORIGINAL_PIPELINE_NAME > original_pipeline.yaml
+fly -t $CONCOURSE_TARGET get-pipeline -p $PARAM_APP_PIPELINE_NAME > original_pipeline.yaml
 
-######
-# START - Create branch template - the main group, the branch group, and the branch lane (jobs, resource types, and resources)
-######
+# Get the full lane for each tab
+get_lane_for_group_name original_pipeline.yaml $PARAM_APP_MASTER_GROUP lane_for_master.yaml
+get_lane_for_group_name original_pipeline.yaml $PARAM_APP_DEV_TEMPLATE_GROUP lane_for_dev_template.yaml
+get_lane_for_group_name original_pipeline.yaml $PARAM_APP_HOT_TEMPLATE_GROUP lane_for_hot_template.yaml
+get_lane_for_group_name original_pipeline.yaml $PARAM_APP_UPDATER_GROUP lane_for_updater.yaml
 
-# Get a list of jobs that have this token in their name, so they can be placed in the main group
-spruce json original_pipeline.yaml | \
-    jq --arg TEMPLATE_GROUP $TEMPLATE_GROUP '{"groups": [.["groups"][] | select(.name | contains($TEMPLATE_GROUP))]}' | \
-    jq '{"jobs": .["groups"][0].jobs}' |
-    json2yaml > job_list_for_main_group_template.yaml
+# Get the group (job list) for each tabs
+get_group_by_name original_pipeline.yaml $PARAM_APP_MASTER_GROUP group_for_master.yaml
+get_group_by_name original_pipeline.yaml $PARAM_APP_DEV_TEMPLATE_GROUP group_for_dev_template.yaml
+get_group_by_name original_pipeline.yaml $PARAM_APP_HOT_TEMPLATE_GROUP group_for_hot_template.yaml
+get_group_by_name original_pipeline.yaml $PARAM_APP_UPDATER_GROUP group_for_updater.yaml
 
-# Get the original pipeline
-fly -t $CONCOURSE_TARGET get-pipeline -p $ORIGINAL_PIPELINE_NAME > original_pipeline.yaml
+# Merge the lane and the group for each tab
+spruce merge lane_for_master.yaml group_for_master.yaml > full_tab_for_master.yaml
+spruce merge lane_for_dev_template.yaml group_for_dev_template.yaml > full_tab_for_dev_template.yaml
+spruce merge lane_for_hot_template.yaml group_for_hot_template.yaml > full_tab_for_hot_template.yaml
+spruce merge lane_for_updater.yaml group_for_updater.yaml > full_tab_for_updater.yaml
 
-# Get all the jobs, resource types, and resources for jobs that have this token in their name
-"$COMMAND_PREFIX"/get_lane_for_token.sh \
-    original_pipeline.yaml \
-    $TEMPLATE_TOKEN \
-    lane_for_"$TEMPLATE_TOKEN".yaml
+# Get a list of jobs placed in the dev branches template
+get_jobs_list_for_group original_pipeline.yaml $PARAM_APP_DEV_TEMPLATE_GROUP job_list_for_dev_template.yaml
+get_jobs_list_for_group original_pipeline.yaml $PARAM_APP_HOT_TEMPLATE_GROUP job_list_for_hot_template.yaml
 
-# Get the job group for the template lane
-"$COMMAND_PREFIX"/get_group_for_token.sh \
-    original_pipeline.yaml \
-    $TEMPLATE_GROUP \
-    $TEMPLATE_TOKEN \
-    group_for_"$TEMPLATE_TOKEN".yaml
+# Use the template for each one of the branches passed in
+if [ -n "${APP_DEV_BRANCHES}" ]; then
+    process_template_for_each_branch full_tab_for_dev_template.yaml job_list_for_dev_template.yaml "$APP_DEV_BRANCHES" $PARAM_APP_DEV_TEMPLATE_GROUP full_tabs_for_each_dev_branch.yaml job_list_for_all_dev_branches.yaml
+    get_group_for_all_branches job_list_for_all_dev_branches.yaml $PARAM_APP_DEV_ALL_BRANCHES_GROUP group_for_all_dev_branches.yaml
+    PIPELINE_MERGE_FILE_DEV_BRANCHES_FILES="group_for_all_dev_branches.yaml full_tabs_for_each_dev_branch.yaml"
+fi
+if [ -n "${APP_HOT_BRANCHES}" ]; then
+    process_template_for_each_branch full_tab_for_hot_template.yaml job_list_for_hot_template.yaml "$APP_HOT_BRANCHES" $PARAM_APP_HOT_TEMPLATE_GROUP full_tabs_for_each_hot_branch.yaml job_list_for_all_hot_branches.yaml
+    get_group_for_all_branches job_list_for_all_hot_branches.yaml $PARAM_APP_HOT_ALL_BRANCHES_GROUP group_for_all_hot_branches.yaml
+    PIPELINE_MERGE_FILE_HOT_BRANCHES_FILES="group_for_all_hot_branches.yaml full_tabs_for_each_hot_branch.yaml"
+fi
 
-# Merge the lane and the group
-spruce merge \
-    lane_for_"$TEMPLATE_TOKEN".yaml group_for_"$TEMPLATE_TOKEN".yaml > \
-    jobs_resources_and_group_template.yaml
+PIPELINE_MERGE_FILES="full_tab_for_master.yaml full_tab_for_dev_template.yaml full_tab_for_hot_template.yaml full_tab_for_updater.yaml"
+PIPELINE_MERGE_FILES="$PIPELINE_MERGE_FILES $PIPELINE_MERGE_FILE_DEV_BRANCHES_FILES $PIPELINE_MERGE_FILE_HOT_BRANCHES_FILES"
 
-######
-# END - Create branch template - the main group, the branch group, and the branch lane (jobs, resource types, and resources)
-######
-
-#####
-# START - Use the jobs/resources/group template (and main group template) for each one of the branches passed in
-#####
-VAR_COUNT=0
-FIRST_BRANCH=true
-for VAR in "$@"
-do
-    # Skip the non-branch name parameters
-    VAR_COUNT=`expr $VAR_COUNT + 1`
-    if [ "$VAR_COUNT" -lt "$BRANCH_LIST_PARAMS_INDEX" ] ; then
-        continue
-    fi
-
-    # Can't use slashes in job names
-    BRANCH_NAME_UNSLASHED=`echo $VAR | sed -e "s/\//-/g"`
-
-    # Get branch name into the jobs/resources/group template
-    sed 's~'"$TEMPLATE_TOKEN"'~'"$BRANCH_NAME_UNSLASHED"'~g' jobs_resources_and_group_template.yaml > jobs_resources_and_group_pipeline.yaml
-    printf "\n" >> jobs_resources_and_group_pipeline.yaml
-
-    # Get branch name into the list of jobs for the main group
-    sed 's~'"$TEMPLATE_TOKEN"'~'"$BRANCH_NAME_UNSLASHED"'~g' job_list_for_main_group_template.yaml > job_list_for_main_group_pipeline.yaml
-    printf "\n" >> job_list_for_main_group_pipeline.yaml
-
-    # now add the branch pipeline to the pipeline of all branches
-    if [ $FIRST_BRANCH == true ] ; then
-        FIRST_BRANCH=false
-        echo "Starting with $BRANCH_NAME_UNSLASHED"
-        spruce merge jobs_resources_and_group_pipeline.yaml > all_branches_jobs_resources_and_group_pipeline.yaml
-        # do the same for the main group section
-        spruce merge job_list_for_main_group_pipeline.yaml > all_branches_job_list_for_main_group_pipeline.yaml
-    else
-        echo "Adding Branch $BRANCH_NAME_UNSLASHED"
-        spruce merge all_branches_jobs_resources_and_group_pipeline.yaml jobs_resources_and_group_pipeline.yaml >> all_branches_jobs_resources_and_group_pipeline.yaml
-        # do the same for the main group section
-        spruce merge all_branches_job_list_for_main_group_pipeline.yaml job_list_for_main_group_pipeline.yaml >> all_branches_job_list_for_main_group_pipeline.yaml
-    fi
-done
-#####
-# END - Use the jobs/resources/group template (and main group template) for each one of the branches passed in
-#####
-
-####
-# Combine main group pipeline and jobs/resources/types/groups pipeline
-####
-
-# Prepare the final main group section
-printf "name: $ORIGINAL_PIPELINE_NAME\n" > final_main_group_section.yaml
-printf "jobs:\n" >> final_main_group_section.yaml
-# Prepare the main group pipeline we created
-sed 's~jobs:~~g' all_branches_job_list_for_main_group_pipeline.yaml > all_branches_job_list_for_main_group_array.yaml
-# Add it to the final main group section
-cat all_branches_job_list_for_main_group_array.yaml >> final_main_group_section.yaml
-# Wrap the section into a group
-spruce json final_main_group_section.yaml | jq '{"groups": [.]}' | json2yaml > final_main_group.yaml
-
-# Finally, merge the jobs/resources/group pipeline and the main group
-spruce merge final_main_group.yaml all_branches_jobs_resources_and_group_pipeline.yaml  > new_pipeline.yaml
+# Finally, merge all the tabs together
+spruce merge $PIPELINE_MERGE_FILES > expanded_pipeline.yaml
 
 if [ "$LOCAL_OR_CONCOURSE" == "LOCAL" ] ; then
-    fly -t $CONCOURSE_TARGET set-pipeline -p "$ORIGINAL_PIPELINE_NAME$NEW_PIPELINE_SUFFIX" -c new_pipeline.yaml
+    fly -t $CONCOURSE_TARGET set-pipeline -p $PARAM_APP_PIPELINE_NAME -c expanded_pipeline.yaml
 fi
 
 if [ "$LOCAL_OR_CONCOURSE" == "CONCOURSE" ] ; then
-    echo y | fly -t $CONCOURSE_TARGET set-pipeline -p "$ORIGINAL_PIPELINE_NAME$NEW_PIPELINE_SUFFIX" -c new_pipeline.yaml  > /dev/null
+    echo y | fly -t $CONCOURSE_TARGET set-pipeline -p $PARAM_APP_PIPELINE_NAME -c expanded_pipeline.yaml  > /dev/null
 fi
 
 # cleanup

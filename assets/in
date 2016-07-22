@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # vim: set ft=sh
 
 set -e
@@ -7,9 +7,9 @@ exec 3>&1 # make stdout available as fd 3 for the result
 exec 1>&2 # redirect all output to stderr for logging
 
 source $(dirname $0)/common.sh
+source $(dirname $0)/branches_common.sh
 
 destination=$1
-
 if [ -z "$destination" ]; then
   echo "usage: $0 <path/to/destination>" >&2
   exit 1
@@ -19,51 +19,37 @@ fi
 PATH=/usr/local/bin:$PATH
 
 payload=$(mktemp $TMPDIR/git-resource-request.XXXXXX)
-
 cat > $payload <&0
-
 load_pubkey $payload
 configure_git_ssl_verification $payload
 configure_credentials $payload
 
-#old_branch_list=$(jq -r '.version.ref // ""' < $payload)
+# Get the parameters for this resource instance
+source $(dirname $0)/export_parameter_values.sh
+export_parameter_values $payload
 
 # Get the list of active dev branches
-GIT_CLONE_DIRECTORY=$TMPDIR/git-resource-repo-cache
-if [ -d $GIT_CLONE_DIRECTORY ]; then
-  cd $GIT_CLONE_DIRECTORY
-  git fetch
-  git reset --hard FETCH_HEAD
+clone_git_repo_into_directory $PARAM_APP_GIT_URI $CONST_APP_GIT_DIR
+cd $CONST_APP_GIT_DIR
+if [ -n "${PARAM_APP_DEV_BRANCH_FILTER}" ]; then
+    LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_DEV_BRANCH_FILTER | xargs)
 else
-  PROJECT_GIT_URI=$(jq -r '.source.project_git_uri // ""' < $payload)
-  git clone $PROJECT_GIT_URI $GIT_CLONE_DIRECTORY
-  cd $GIT_CLONE_DIRECTORY
+    LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
 fi
-ACTIVE_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
+if [ -n "${PARAM_APP_HOT_BRANCH_FILTER}" ]; then
+    LOC_APP_HOT_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_HOT_BRANCH_FILTER | xargs)
+else
+    LOC_APP_HOT_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
+fi
 
 # Log in to concourse
-CONCOURSE_TARGET=savannah
-CONCOURSE_USERNAME=$(jq -r '.source.concourse_username // ""' < $payload)
-CONCOURSE_PASSWORD=$(jq -r '.source.concourse_password // ""' < $payload)
-CONCOURSE_URL=$(jq -r '.source.concourse_url // ""' < $payload)
-echo -e "$CONCOURSE_USERNAME\n$CONCOURSE_PASSWORD\n" | fly -t $CONCOURSE_TARGET login --concourse-url $CONCOURSE_URL
+LOC_CONCOURSE_TARGET=savannah
+echo -e "$PARAM_CONCOURSE_USERNAME\n$PARAM_CONCOURSE_PASSWORD\n" | fly -t $LOC_CONCOURSE_TARGET login --concourse-url $PARAM_CONCOURSE_URL
 
 # Create the pipeline for the active dev branches
-ORIGINAL_PIPELINE_NAME=$(jq -r '.source.project_pipeline // ""' < $payload)
-NEW_PIPELINE_SUFFIX=_dev
-TEMPLATE_TOKEN=dev-branches-template
-TEMPLATE_GROUP=template-for_dev
-LOCAL_OR_CONCOURSE=CONCOURSE
+/opt/resource/set_dev_branches_pipeline.sh $LOC_CONCOURSE_TARGET CONCOURSE "$LOC_APP_DEV_BRANCHES" "$LOC_APP_HOT_BRANCHES"
 
-/opt/resource/set_dev_branches_pipeline.sh \
-    $CONCOURSE_TARGET \
-    $ORIGINAL_PIPELINE_NAME \
-    $NEW_PIPELINE_SUFFIX \
-    $LOCAL_OR_CONCOURSE \
-    $TEMPLATE_TOKEN \
-    $TEMPLATE_GROUP \
-    $ACTIVE_DEV_BRANCHES
-
+LOC_REF="$LOC_APP_DEV_BRANCHES $LOC_APP_HOT_BRANCHES"
 jq -n "{
-  version: {ref: $(echo $new_branch_list | jq -R .)}
+  version: {ref: $(echo $LOC_REF | jq -R .)}
 }" >&3
