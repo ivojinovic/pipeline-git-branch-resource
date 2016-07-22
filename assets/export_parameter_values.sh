@@ -35,6 +35,8 @@ export_parameter_values() {
 
     export PARAM_APP_STATIC_GROUPS="$PARAM_APP_MASTER_GROUP $PARAM_APP_DEV_TEMPLATE_GROUP $PARAM_APP_HOT_TEMPLATE_GROUP $PARAM_APP_UPDATER_GROUP"
 
+    export PARAM_APP_REQUESTBIN=$(jq -r '.source.requestbin // ""' < $PAYLOAD)
+
     export CONST_APP_GIT_DIR=$TMPDIR/git-resource-repo-cache-1
     export CONST_APP_GROUP_CHECK_OUTPUT_FILE=/opt/resource/pipeline_has_correct_groups.out
     #########

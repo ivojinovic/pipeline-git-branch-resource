@@ -43,6 +43,9 @@ cd $CONST_PIPELINES_GIT_DIR
 git checkout $PARAM_PIPELINES_BRANCH
 LOC_PIPELINES_BRANCH_LAST_COMMIT=$(git rev-parse HEAD)
 
+# Debug info
+curl -X POST -d "LOC_APP_DEV_BRANCHES=$LOC_APP_DEV_BRANCHES&LOC_APP_HOT_BRANCHES=$LOC_APP_HOT_BRANCHES&LOC_PIPELINES_BRANCH_LAST_COMMIT=$LOC_PIPELINES_BRANCH_LAST_COMMIT" http://requestb.in/$PARAM_APP_REQUESTBIN
+
 # Check if the current pipeline has the groups it should have (in other words: was it recently repipied and the dev branches haven't been expanded yet)
 pipeline_has_correct_groups "$PARAM_APP_STATIC_GROUPS" $CONST_APP_GROUP_CHECK_OUTPUT_FILE "$LOC_APP_DEV_BRANCHES" "$LOC_APP_HOT_BRANCHES"
 LOC_APP_PIPELINE_HAS_CORRECT_GROUPS=`cat $CONST_APP_GROUP_CHECK_OUTPUT_FILE`
@@ -54,8 +57,8 @@ if [ "$LOC_APP_PIPELINE_HAS_CORRECT_GROUPS" == "false" ] ; then
     LOC_NEW_REF="$LOC_NEW_REF $LOC_TIMESTAMP"
 fi
 
-# Debug code
-curl -X POST -d "LOC_APP_PIPELINE_HAS_CORRECT_GROUPS=$LOC_APP_PIPELINE_HAS_CORRECT_GROUPS&LOC_NEW_REF=LOC_NEW_REF" http://requestb.in/ojdpb2oj
+# Debug info
+curl -X POST -d "LOC_APP_PIPELINE_HAS_CORRECT_GROUPS=$LOC_APP_PIPELINE_HAS_CORRECT_GROUPS&LOC_NEW_REF=$LOC_NEW_REF" http://requestb.in/$PARAM_APP_REQUESTBIN
 
 if [ "${ref}" = "${LOC_NEW_REF}" ]; then
     echo '[{ "ref": "'$PARAM_OLD_REF'" }]' >&3
