@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 CONCOURSE_TARGET=savannah
-APP_NAME=jarvis_api
-APP_GIT_URI=ssh://git@stash.zipcar.com:7999/cheet/jarvis_api.git
+APP_NAME=pipeline-test-app
+APP_GIT_URI=ssh://git@stash.zipcar.com:7999/cheet/pipeline-test-app.git
 
 this_directory=`pwd`
 
@@ -14,17 +14,17 @@ fi
 git clone $APP_GIT_URI
 cd $APP_NAME
 
-export PARAM_APP_PIPELINE_NAME=jarvis_api_test
+export PARAM_APP_PIPELINE_NAME=pipeline-test-app
 export PARAM_APP_MASTER_GROUP=master
 export PARAM_APP_UPDATER_GROUP=updater
 
 export PARAM_APP_DEV_TEMPLATE_GROUP=dev-template
 export PARAM_APP_DEV_ALL_BRANCHES_GROUP=dev-all
-export PARAM_APP_DEV_BRANCH_FILTER='sed /test-/!d'
+export PARAM_APP_DEV_BRANCH_FILTER='sed /hotfix-/d'
 
 export PARAM_APP_HOT_TEMPLATE_GROUP=hot-template
 export PARAM_APP_HOT_ALL_BRANCHES_GROUP=hot-all
-export PARAM_APP_HOT_BRANCH_FILTER='sed /testhotfix-/!d'
+export PARAM_APP_HOT_BRANCH_FILTER='sed /hotfix-/!d'
 
 if [ -n "${PARAM_APP_DEV_BRANCH_FILTER}" ]; then
     LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_DEV_BRANCH_FILTER | xargs)
