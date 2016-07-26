@@ -48,7 +48,6 @@ export_parameter_values() {
     # Pipelines project /
     #########
     export PARAM_PIPELINES_BW_VERSION=$(jq -r '.source.branch_watcher_version // ""' < $PAYLOAD)
-    export PARAM_PIPELINES_GIT_URI=$(jq -r '.source.pipelines_git_uri // ""' < $PAYLOAD)
     export PARAM_PIPELINES_BRANCH=$(jq -r '.source.pipelines_branch // ""' < $PAYLOAD)
 
     export CONST_PIPELINES_GIT_DIR=$TMPDIR/git-resource-repo-cache-2
