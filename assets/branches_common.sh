@@ -102,7 +102,7 @@ get_group_for_group_name() {
 }
 
 process_template_for_each_branch() {
-    FULL_TAB_FOR_TEMPLATE_FILE=$1
+    LANE_FOR_TEMPLATE_FILE=$1
     JOB_LIST_FOR_TEMPLATE_FILE=$2
     APP_BRANCHES=$3
     APP_TEMPLATE_GROUP=$4
@@ -118,8 +118,8 @@ process_template_for_each_branch() {
         BRANCH_NAME_UNSLASHED=`echo $BRANCH_NAME | sed -e "s/\//-/g"`
 
         # Get branch name into the jobs/resources/group template
-        sed 's~'"$APP_TEMPLATE_GROUP"'~'"$BRANCH_NAME_UNSLASHED"'~g' $FULL_TAB_FOR_TEMPLATE_FILE > full_tab_for_branch.yaml
-        printf "\n" >> full_tab_for_branch.yaml
+        sed 's~'"$APP_TEMPLATE_GROUP"'~'"$BRANCH_NAME_UNSLASHED"'~g' $LANE_FOR_TEMPLATE_FILE > lane_for_this_branch.yaml
+        printf "\n" >> lane_for_this_branch.yaml
 
         # Get branch name into the list of jobs for the main group
         sed 's~'"$APP_TEMPLATE_GROUP"'~'"$BRANCH_NAME_UNSLASHED"'~g' $JOB_LIST_FOR_TEMPLATE_FILE > job_list_for_this_branch.yaml
@@ -132,12 +132,12 @@ process_template_for_each_branch() {
         if [ $FIRST_BRANCH == true ] ; then
             FIRST_BRANCH=false
             echo "Starting with $BRANCH_NAME_UNSLASHED"
-            spruce merge full_tab_for_branch.yaml group_for_this_branch.yaml > $FULL_TABS_FOR_EACH_BRANCH_FILE
+            spruce merge lane_for_this_branch.yaml group_for_this_branch.yaml > $FULL_TABS_FOR_EACH_BRANCH_FILE
             # do the same for the main group section
             spruce merge job_list_for_this_branch.yaml > $JOB_LIST_FOR_ALL_BRANCHES_FILE
         else
             echo "Adding Branch $BRANCH_NAME_UNSLASHED"
-            spruce merge $FULL_TABS_FOR_EACH_BRANCH_FILE full_tab_for_branch.yaml group_for_this_branch.yaml >> $FULL_TABS_FOR_EACH_BRANCH_FILE
+            spruce merge $FULL_TABS_FOR_EACH_BRANCH_FILE lane_for_this_branch.yaml group_for_this_branch.yaml >> $FULL_TABS_FOR_EACH_BRANCH_FILE
             # do the same for the main group section
             spruce merge $JOB_LIST_FOR_ALL_BRANCHES_FILE job_list_for_this_branch.yaml >> $JOB_LIST_FOR_ALL_BRANCHES_FILE
         fi
