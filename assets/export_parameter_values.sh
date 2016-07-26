@@ -33,7 +33,7 @@ export_parameter_values() {
     export PARAM_APP_HOT_ALL_BRANCHES_GROUP=$(jq -r '.source.group_hot_all // ""' < $PAYLOAD)
     export PARAM_APP_HOT_BRANCH_FILTER=$(jq -r '.source.hot_branches_filter // ""' < $PAYLOAD)
 
-    export PARAM_APP_STATIC_GROUPS="$PARAM_APP_MASTER_GROUP $PARAM_APP_DEV_TEMPLATE_GROUP $PARAM_APP_HOT_TEMPLATE_GROUP $PARAM_APP_UPDATER_GROUP"
+    export PARAM_APP_STATIC_GROUPS="$PARAM_APP_MASTER_GROUP $PARAM_APP_UPDATER_GROUP"
 
     export PARAM_APP_REQUESTBIN=$(jq -r '.source.requestbin // ""' < $PAYLOAD)
     export PARAM_APP_OVERRIDE=$(jq -r '.source.override // ""' < $PAYLOAD)
