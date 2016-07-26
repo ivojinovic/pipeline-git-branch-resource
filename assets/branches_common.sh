@@ -37,8 +37,13 @@ get_jobs_list_for_group() {
     GROUP_NAME=$2
     OUTPUT_FILE_NAME=$3
     spruce json $INPUT_FILE_NAME | \
-        jq --arg GROUP_NAME $GROUP_NAME '{"groups": [.["groups"][] | select(.name | contains($GROUP_NAME))]}' | \
-        jq '{"jobs": .["groups"][0].jobs}' |
+        jq --arg GROUP_NAME $GROUP_NAME \
+        '{
+            "jobs":
+                    [
+                        [.["jobs"][] | select(.name | contains($GROUP_NAME))][].name
+                    ]
+         }' | \
         json2yaml > $OUTPUT_FILE_NAME
 }
 
@@ -86,14 +91,14 @@ pipeline_has_correct_groups() {
     fi
 }
 
-get_group_for_all_branches() {
+get_group_for_group_name() {
     INPUT_FILE=$1
-    APP_ALL_BRANCHES_GROUP=$2
+    GROUP_NAME=$2
     OUTPUT_FILE=$3
 
-    printf "name: $APP_ALL_BRANCHES_GROUP\njobs:\n" > group_node_for_all_branches.yaml
-    sed 's~jobs:~~g' $INPUT_FILE >> group_node_for_all_branches.yaml
-    spruce json group_node_for_all_branches.yaml | jq '{"groups": [.]}' | json2yaml > $OUTPUT_FILE
+    printf "name: $GROUP_NAME\njobs:\n" > group_node.yaml
+    sed 's~jobs:~~g' $INPUT_FILE >> group_node.yaml
+    spruce json group_node.yaml | jq '{"groups": [.]}' | json2yaml > $OUTPUT_FILE
 }
 
 process_template_for_each_branch() {
@@ -120,16 +125,19 @@ process_template_for_each_branch() {
         sed 's~'"$APP_TEMPLATE_GROUP"'~'"$BRANCH_NAME_UNSLASHED"'~g' $JOB_LIST_FOR_TEMPLATE_FILE > job_list_for_this_branch.yaml
         printf "\n" >> job_list_for_this_branch.yaml
 
+        spruce merge job_list_for_this_branch.yaml > job_array_for_this_branch.yaml
+        get_group_for_group_name job_array_for_this_branch.yaml $BRANCH_NAME_UNSLASHED group_for_this_branch.yaml
+
         # now add the branch pipeline to the pipeline of all branches
         if [ $FIRST_BRANCH == true ] ; then
             FIRST_BRANCH=false
             echo "Starting with $BRANCH_NAME_UNSLASHED"
-            spruce merge full_tab_for_branch.yaml > $FULL_TABS_FOR_EACH_BRANCH_FILE
+            spruce merge full_tab_for_branch.yaml group_for_this_branch.yaml > $FULL_TABS_FOR_EACH_BRANCH_FILE
             # do the same for the main group section
             spruce merge job_list_for_this_branch.yaml > $JOB_LIST_FOR_ALL_BRANCHES_FILE
         else
             echo "Adding Branch $BRANCH_NAME_UNSLASHED"
-            spruce merge $FULL_TABS_FOR_EACH_BRANCH_FILE full_tab_for_branch.yaml >> $FULL_TABS_FOR_EACH_BRANCH_FILE
+            spruce merge $FULL_TABS_FOR_EACH_BRANCH_FILE full_tab_for_branch.yaml group_for_this_branch.yaml >> $FULL_TABS_FOR_EACH_BRANCH_FILE
             # do the same for the main group section
             spruce merge $JOB_LIST_FOR_ALL_BRANCHES_FILE job_list_for_this_branch.yaml >> $JOB_LIST_FOR_ALL_BRANCHES_FILE
         fi
