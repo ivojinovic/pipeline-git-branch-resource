@@ -30,7 +30,6 @@ export_parameter_values() {
     PARAM_APP_HOT_TEMPLATE_GROUP_1=$(jq -r '.source.group_hot_template_1 // ""' < $PAYLOAD)
     PARAM_APP_HOT_TEMPLATE_GROUP_2=$(jq -r '.source.group_hot_template_2 // ""' < $PAYLOAD)
     export PARAM_APP_HOT_TEMPLATE_GROUP="$PARAM_APP_HOT_TEMPLATE_GROUP_1""$PARAM_APP_HOT_TEMPLATE_GROUP_2"
-    export PARAM_APP_HOT_ALL_BRANCHES_GROUP=$(jq -r '.source.group_hot_all // ""' < $PAYLOAD)
     export PARAM_APP_HOT_BRANCH_FILTER=$(jq -r '.source.hot_branches_filter // ""' < $PAYLOAD)
 
     export PARAM_APP_STATIC_GROUPS="$PARAM_APP_MASTER_GROUP $PARAM_APP_UPDATER_GROUP"

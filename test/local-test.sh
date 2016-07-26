@@ -23,7 +23,6 @@ export PARAM_APP_DEV_ALL_BRANCHES_GROUP=dev
 export PARAM_APP_DEV_BRANCH_FILTER='sed /hotfix-/d'
 
 export PARAM_APP_HOT_TEMPLATE_GROUP=hot-template
-export PARAM_APP_HOT_ALL_BRANCHES_GROUP=hotfix
 export PARAM_APP_HOT_BRANCH_FILTER='sed /hotfix-/!d'
 
 if [ -n "${PARAM_APP_DEV_BRANCH_FILTER}" ]; then

@@ -33,7 +33,6 @@ fi
 if [ -n "${APP_HOT_BRANCHES}" ]; then
     get_jobs_list_for_group original_pipeline.yaml $PARAM_APP_HOT_TEMPLATE_GROUP job_list_for_hot_template.yaml
     process_template_for_each_branch lane_for_hot_template.yaml job_list_for_hot_template.yaml "$APP_HOT_BRANCHES" $PARAM_APP_HOT_TEMPLATE_GROUP full_tabs_for_each_hot_branch.yaml job_list_for_all_hot_branches.yaml
-    get_group_for_group_name job_list_for_all_hot_branches.yaml $PARAM_APP_HOT_ALL_BRANCHES_GROUP group_for_all_hot_branches.yaml
     HOT_FULL_TAB_FILE="full_tabs_for_each_hot_branch.yaml"
 fi
 
@@ -51,7 +50,7 @@ spruce merge $STATIC_LANES_AND_DYNAMIC_TABS_FILES > static_lanes_and_dynamic_tab
 get_group_by_name original_pipeline.yaml $PARAM_APP_MASTER_GROUP group_for_master.yaml
 get_group_by_name original_pipeline.yaml $PARAM_APP_UPDATER_GROUP group_for_updater.yaml
 
-spruce merge group_for_master.yaml group_for_updater.yaml group_for_all_dev_branches.yaml group_for_all_hot_branches.yaml static_lanes_and_dynamic_tabs.yaml > expanded_pipeline.yaml
+spruce merge group_for_master.yaml group_for_updater.yaml group_for_all_dev_branches.yaml static_lanes_and_dynamic_tabs.yaml > expanded_pipeline.yaml
 
 if [ "$LOCAL_OR_CONCOURSE" == "LOCAL" ] ; then
     fly -t $CONCOURSE_TARGET set-pipeline -p $PARAM_APP_PIPELINE_NAME -c expanded_pipeline.yaml
