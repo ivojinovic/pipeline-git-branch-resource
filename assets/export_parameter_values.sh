@@ -34,6 +34,7 @@ export_parameter_values() {
 
     export PARAM_APP_STATIC_GROUPS="$PARAM_APP_MASTER_GROUP $PARAM_APP_UPDATER_GROUP"
 
+    export PARAM_APP_SLAHES_OK_FLAG=$(jq -r '.source.slashes_ok_flag // ""' < $PAYLOAD)
     export PARAM_APP_REQUESTBIN=$(jq -r '.source.requestbin // ""' < $PAYLOAD)
     export PARAM_APP_OVERRIDE=$(jq -r '.source.override // ""' < $PAYLOAD)
 

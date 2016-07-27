@@ -118,7 +118,8 @@ process_template_for_each_branch() {
         BRANCH_NAME_UNSLASHED=`echo $BRANCH_NAME | sed -e "s/\//-/g"`
 
         # Get branch name into the jobs/resources/group template
-        sed 's~'"$APP_TEMPLATE_GROUP"'~'"$BRANCH_NAME_UNSLASHED"'~g' $LANE_FOR_TEMPLATE_FILE > lane_for_this_branch.yaml
+        sed 's~'"$APP_TEMPLATE_GROUP$PARAM_APP_SLAHES_OK_FLAG"'~'"$BRANCH_NAME"'~g' $LANE_FOR_TEMPLATE_FILE > lane_for_this_branch_with_slashes.yaml
+        sed 's~'"$APP_TEMPLATE_GROUP"'~'"$BRANCH_NAME_UNSLASHED"'~g' lane_for_this_branch_with_slashes.yaml > lane_for_this_branch.yaml
         printf "\n" >> lane_for_this_branch.yaml
 
         # Get branch name into the list of jobs for the main group

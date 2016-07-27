@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 CONCOURSE_TARGET=savannah
-APP_NAME=pipeline-test-app
-APP_GIT_URI=ssh://git@stash.zipcar.com:7999/cheet/pipeline-test-app.git
+APP_NAME=hotspot
+APP_GIT_URI=ssh://git@stash.zipcar.com:7999/lm/hotspot.git
 
 this_directory=`pwd`
 
@@ -14,7 +14,7 @@ fi
 git clone $APP_GIT_URI
 cd $APP_NAME
 
-export PARAM_APP_PIPELINE_NAME=pipeline-test-app
+export PARAM_APP_PIPELINE_NAME=hotspot_new
 export PARAM_APP_MASTER_GROUP=master
 export PARAM_APP_UPDATER_GROUP=updater
 
@@ -24,6 +24,7 @@ export PARAM_APP_DEV_BRANCH_FILTER='sed /hotfix-/d'
 
 export PARAM_APP_HOT_TEMPLATE_GROUP=hot-template
 export PARAM_APP_HOT_BRANCH_FILTER='sed /hotfix-/!d'
+export PARAM_APP_SLAHES_OK_FLAG=-slashes-ok
 
 if [ -n "${PARAM_APP_DEV_BRANCH_FILTER}" ]; then
     LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_DEV_BRANCH_FILTER | xargs)
