@@ -47,14 +47,25 @@ get_jobs_list_for_group() {
         json2yaml > $OUTPUT_FILE_NAME
 }
 
-clone_git_repo_into_directory() {
+fetch_or_clone_git_repo_into_directory() {
     REPO_URL=$1
     DIRECTORY=$2
 
     if [ -d $DIRECTORY ]; then
-      rm -Rf $DIRECTORY
+        if [ -n "${PARAM_APP_REQUESTBIN}" ]; then
+            curl -X POST -d "F_OR_C=FETCH" http://requestb.in/$PARAM_APP_REQUESTBIN
+        fi
+        pushd .
+        cd $DIRECTORY
+        git fetch --prune
+        git reset --hard FETCH_HEAD
+        popd
+    else
+        if [ -n "${PARAM_APP_REQUESTBIN}" ]; then
+            curl -X POST -d "F_OR_C=CLONE" http://requestb.in/$PARAM_APP_REQUESTBIN
+        fi
+        git clone $REPO_URL $DIRECTORY
     fi
-    git clone $REPO_URL $DIRECTORY
 }
 
 updater_job_in_progress() {

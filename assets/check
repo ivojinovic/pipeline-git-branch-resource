@@ -35,7 +35,7 @@ if [ "$UPDATER_JOB_IN_PROGRESS" == "true" ] ; then
     fi
 else
     # Get the list of app dev branches
-    clone_git_repo_into_directory $PARAM_APP_GIT_URI $CONST_APP_GIT_DIR
+    fetch_or_clone_git_repo_into_directory $PARAM_APP_GIT_URI $CONST_APP_GIT_DIR
     cd $CONST_APP_GIT_DIR
     if [ -n "${PARAM_APP_DEV_BRANCH_FILTER}" ]; then
         LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_DEV_BRANCH_FILTER | xargs)
