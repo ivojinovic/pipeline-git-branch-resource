@@ -29,6 +29,7 @@ source $(dirname $0)/export_parameter_values.sh
 export_parameter_values $payload
 
 # Get the list of active dev branches
+sleep 70
 clone_git_repo_into_directory $PARAM_APP_GIT_URI $CONST_APP_GIT_DIR
 cd $CONST_APP_GIT_DIR
 if [ -n "${PARAM_APP_DEV_BRANCH_FILTER}" ]; then

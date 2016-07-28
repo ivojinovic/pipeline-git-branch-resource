@@ -29,6 +29,10 @@ UPDATER_JOB_IN_PROGRESS=`cat updater_job_in_progress.txt`
 
 if [ "$UPDATER_JOB_IN_PROGRESS" == "true" ] ; then
     LOC_NEW_REF="$ref"
+    # Debug info
+    if [ -n "${PARAM_APP_REQUESTBIN}" ]; then
+        curl -X POST -d "UPDATER_JOB_IN_PROGRESS=$UPDATER_JOB_IN_PROGRESS" http://requestb.in/$PARAM_APP_REQUESTBIN
+    fi
 else
     # Get the list of app dev branches
     clone_git_repo_into_directory $PARAM_APP_GIT_URI $CONST_APP_GIT_DIR
