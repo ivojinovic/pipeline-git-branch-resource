@@ -57,6 +57,28 @@ clone_git_repo_into_directory() {
     git clone $REPO_URL $DIRECTORY
 }
 
+updater_job_in_progress() {
+    OUTPUT_FILE=$1
+
+    echo "false" > $OUTPUT_FILE
+
+    LOC_CONCOURSE_TARGET=savannah
+    echo -e "$PARAM_CONCOURSE_USERNAME\n$PARAM_CONCOURSE_PASSWORD\n" | fly -t $LOC_CONCOURSE_TARGET login --concourse-url $PARAM_CONCOURSE_URL
+
+    # Get job status log
+    fly -t $LOC_CONCOURSE_TARGET builds -j $PARAM_APP_PIPELINE_NAME/$PARAM_APP_UPDATER_GROUP > $PARAM_APP_PIPELINE_NAME.$PARAM_APP_UPDATER_GROUP.txt
+
+    # Get job current status
+    JOB_LINE=$(head -n 1 $PARAM_APP_PIPELINE_NAME.$PARAM_APP_UPDATER_GROUP.txt)
+    JOB_STATUS=$(echo $JOB_LINE | cut -d " " -f 4)
+
+    if [ "$JOB_STATUS" == "started" ] ; then
+        echo "true" > $OUTPUT_FILE
+    else
+        echo "false" > $OUTPUT_FILE
+    fi
+}
+
 pipeline_has_correct_groups() {
     STATIC_GROUPS=$1
     OUTPUT_FILE=$2

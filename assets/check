@@ -23,47 +23,55 @@ configure_credentials $payload
 source $(dirname $0)/export_parameter_values.sh
 export_parameter_values $payload
 
-# Get the list of app dev branches
-clone_git_repo_into_directory $PARAM_APP_GIT_URI $CONST_APP_GIT_DIR
-cd $CONST_APP_GIT_DIR
-if [ -n "${PARAM_APP_DEV_BRANCH_FILTER}" ]; then
-    LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_DEV_BRANCH_FILTER | xargs)
-else
-    LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
-fi
-if [ -n "${PARAM_APP_HOT_BRANCH_FILTER}" ]; then
-    LOC_APP_HOT_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_HOT_BRANCH_FILTER | xargs)
-else
-    LOC_APP_HOT_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
-fi
+# Before doing anything else, check if this job is currently in progress for this pipeline. If so, skip this try
+updater_job_in_progress updater_job_in_progress.txt
+UPDATER_JOB_IN_PROGRESS=`cat updater_job_in_progress.txt`
 
-# Debug info
-if [ -n "${PARAM_APP_REQUESTBIN}" ]; then
-    curl -X POST -d "PARAM_PIPELINES_BW_VERSION=$PARAM_PIPELINES_BW_VERSION&LOC_APP_DEV_BRANCHES=$LOC_APP_DEV_BRANCHES&LOC_APP_HOT_BRANCHES=$LOC_APP_HOT_BRANCHES" http://requestb.in/$PARAM_APP_REQUESTBIN
-fi
-
-# Check if the current pipeline has the groups it should have (in other words: was it recently repipied and the dev branches haven't been expanded yet)
-pipeline_has_correct_groups "$PARAM_APP_STATIC_GROUPS" $CONST_APP_GROUP_CHECK_OUTPUT_FILE "$LOC_APP_DEV_BRANCHES" "$LOC_APP_HOT_BRANCHES"
-LOC_APP_PIPELINE_HAS_CORRECT_GROUPS=`cat $CONST_APP_GROUP_CHECK_OUTPUT_FILE`
-
-# Now, put it all together
-LOC_NEW_REF="$PARAM_PIPELINES_BW_VERSION $LOC_APP_DEV_BRANCHES $LOC_APP_HOT_BRANCHES"
-if [ "$LOC_APP_PIPELINE_HAS_CORRECT_GROUPS" == "false" ] ; then
-    LOC_TIMESTAMP=$(date +%s)
-    LOC_NEW_REF="$LOC_NEW_REF $LOC_TIMESTAMP"
-fi
-
-if [ "$PARAM_APP_OVERRIDE" == "FORCE_RUN" ] ; then
-    LOC_TIMESTAMP=$(date +%s)
-    LOC_NEW_REF="$LOC_NEW_REF FORCE_RUN $LOC_TIMESTAMP"
-fi
-if [ "$PARAM_APP_OVERRIDE" == "FORCE_FREEZE" ] ; then
+if [ "$UPDATER_JOB_IN_PROGRESS" == "true" ] ; then
     LOC_NEW_REF="$ref"
-fi
+else
+    # Get the list of app dev branches
+    clone_git_repo_into_directory $PARAM_APP_GIT_URI $CONST_APP_GIT_DIR
+    cd $CONST_APP_GIT_DIR
+    if [ -n "${PARAM_APP_DEV_BRANCH_FILTER}" ]; then
+        LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_DEV_BRANCH_FILTER | xargs)
+    else
+        LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
+    fi
+    if [ -n "${PARAM_APP_HOT_BRANCH_FILTER}" ]; then
+        LOC_APP_HOT_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_HOT_BRANCH_FILTER | xargs)
+    else
+        LOC_APP_HOT_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
+    fi
 
-# Debug info
-if [ -n "${PARAM_APP_REQUESTBIN}" ]; then
-    curl -X POST -d "LOC_APP_PIPELINE_HAS_CORRECT_GROUPS=$LOC_APP_PIPELINE_HAS_CORRECT_GROUPS&LOC_NEW_REF=$LOC_NEW_REF&PARAM_APP_OVERRIDE=$PARAM_APP_OVERRIDE" http://requestb.in/$PARAM_APP_REQUESTBIN
+    # Debug info
+    if [ -n "${PARAM_APP_REQUESTBIN}" ]; then
+        curl -X POST -d "PARAM_PIPELINES_BW_VERSION=$PARAM_PIPELINES_BW_VERSION&LOC_APP_DEV_BRANCHES=$LOC_APP_DEV_BRANCHES&LOC_APP_HOT_BRANCHES=$LOC_APP_HOT_BRANCHES" http://requestb.in/$PARAM_APP_REQUESTBIN
+    fi
+
+    # Check if the current pipeline has the groups it should have (in other words: was it recently repipied and the dev branches haven't been expanded yet)
+    pipeline_has_correct_groups "$PARAM_APP_STATIC_GROUPS" $CONST_APP_GROUP_CHECK_OUTPUT_FILE "$LOC_APP_DEV_BRANCHES" "$LOC_APP_HOT_BRANCHES"
+    LOC_APP_PIPELINE_HAS_CORRECT_GROUPS=`cat $CONST_APP_GROUP_CHECK_OUTPUT_FILE`
+
+    # Now, put it all together
+    LOC_NEW_REF="$PARAM_PIPELINES_BW_VERSION $LOC_APP_DEV_BRANCHES $LOC_APP_HOT_BRANCHES"
+    if [ "$LOC_APP_PIPELINE_HAS_CORRECT_GROUPS" == "false" ] ; then
+        LOC_TIMESTAMP=$(date +%s)
+        LOC_NEW_REF="$LOC_NEW_REF $LOC_TIMESTAMP"
+    fi
+
+    if [ "$PARAM_APP_OVERRIDE" == "FORCE_RUN" ] ; then
+        LOC_TIMESTAMP=$(date +%s)
+        LOC_NEW_REF="$LOC_NEW_REF FORCE_RUN $LOC_TIMESTAMP"
+    fi
+    if [ "$PARAM_APP_OVERRIDE" == "FORCE_FREEZE" ] ; then
+        LOC_NEW_REF="$ref"
+    fi
+
+    # Debug info
+    if [ -n "${PARAM_APP_REQUESTBIN}" ]; then
+        curl -X POST -d "LOC_APP_PIPELINE_HAS_CORRECT_GROUPS=$LOC_APP_PIPELINE_HAS_CORRECT_GROUPS&LOC_NEW_REF=$LOC_NEW_REF&PARAM_APP_OVERRIDE=$PARAM_APP_OVERRIDE" http://requestb.in/$PARAM_APP_REQUESTBIN
+    fi
 fi
 
 if [ "${ref}" = "${LOC_NEW_REF}" ]; then
