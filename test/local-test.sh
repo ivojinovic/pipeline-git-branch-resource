@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 CONCOURSE_TARGET=savannah
-APP_NAME=hotspot
-APP_GIT_URI=ssh://git@stash.zipcar.com:7999/lm/hotspot.git
+APP_NAME=settings
+APP_GIT_URI=ssh://git@stash.zipcar.com:7999/lm/settings.git
 
 this_directory=`pwd`
 
@@ -14,7 +14,7 @@ fi
 git clone $APP_GIT_URI
 cd $APP_NAME
 
-export PARAM_APP_PIPELINE_NAME=hotspot_new
+export PARAM_APP_PIPELINE_NAME=settings
 export PARAM_APP_MASTER_GROUP=master
 export PARAM_APP_UPDATER_GROUP=updater
 
