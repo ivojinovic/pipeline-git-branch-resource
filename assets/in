@@ -31,16 +31,14 @@ export_parameter_values $payload
 # Get the list of active dev branches
 fetch_or_clone_git_repo_into_directory $PARAM_APP_GIT_URI $CONST_APP_GIT_DIR
 cd $CONST_APP_GIT_DIR
-if [ -n "${PARAM_APP_DEV_BRANCH_FILTER}" ]; then
-    LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_DEV_BRANCH_FILTER | xargs)
-else
-    LOC_APP_DEV_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
-fi
-if [ -n "${PARAM_APP_HOT_BRANCH_FILTER}" ]; then
-    LOC_APP_HOT_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $PARAM_APP_HOT_BRANCH_FILTER | xargs)
-else
-    LOC_APP_HOT_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
-fi
+
+LOC_APP_DEV_BRANCHES_FILE=app_dev_branches.out
+get_branch_list "$PARAM_APP_DEV_BRANCH_FILTER" $LOC_APP_DEV_BRANCHES_FILE
+LOC_APP_DEV_BRANCHES=`cat $LOC_APP_DEV_BRANCHES_FILE`
+
+LOC_APP_HOT_BRANCHES_FILE=app_hot_branches.out
+get_branch_list "$PARAM_APP_HOT_BRANCH_FILTER" $LOC_APP_HOT_BRANCHES_FILE
+LOC_APP_HOT_BRANCHES=`cat $LOC_APP_HOT_BRANCHES_FILE`
 
 # Log in to concourse
 LOC_CONCOURSE_TARGET=savannah

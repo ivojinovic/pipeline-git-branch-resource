@@ -177,3 +177,17 @@ process_template_for_each_branch() {
         fi
     done
 }
+
+get_branch_list() {
+    BRANCH_FILTER=$1
+    OUTPUT_FILE=$2
+
+    cd $CONST_APP_GIT_DIR
+    if [ -n "${BRANCH_FILTER}" ]; then
+        LOC_APP_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $BRANCH_FILTER | xargs)
+    else
+        LOC_APP_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
+    fi
+
+    echo "$LOC_APP_BRANCHES" > $OUTPUT_FILE
+}
