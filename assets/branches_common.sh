@@ -182,12 +182,24 @@ get_branch_list() {
     BRANCH_FILTER=$1
     OUTPUT_FILE=$2
 
-    cd $CONST_APP_GIT_DIR
-    if [ -n "${BRANCH_FILTER}" ]; then
-        LOC_APP_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | $BRANCH_FILTER | xargs)
-    else
-        LOC_APP_BRANCHES=$(git branch -r --no-merged | sed "s/origin\///" | xargs)
+    RECENT_UNMERGED_BRANCHES=""
+
+    CUTOFF_DATE="1984-1-1"
+    if [ -n "${PARAM_BRANCHES_FROM_DAYS_AGO}" ]; then
+        CUTOFF_DATE=`[ "$(uname)" = Linux ] && date --date="${PARAM_BRANCHES_FROM_DAYS_AGO} days ago" +"%Y"-"%m"-"%d" || date -v-${PARAM_BRANCHES_FROM_DAYS_AGO}d +"%Y"-"%m"-"%d"`
     fi
 
-    echo "$LOC_APP_BRANCHES" > $OUTPUT_FILE
+    cd $CONST_APP_GIT_DIR
+    for UNMERGED_BRANCH in `git branch -r --no-merged`;do
+        RECENT_UNMERGED_BRANCH=`git log --after="${CUTOFF_DATE}" --format="%ci" $UNMERGED_BRANCH | head -n 1`
+        if [ -n "${RECENT_UNMERGED_BRANCH}" ]; then
+            if [ -n "${BRANCH_FILTER}" ]; then
+                RECENT_UNMERGED_BRANCHES="${RECENT_UNMERGED_BRANCHES} `echo ${UNMERGED_BRANCH} | sed 's/origin\///' | ${BRANCH_FILTER}`"
+            else
+                RECENT_UNMERGED_BRANCHES="${RECENT_UNMERGED_BRANCHES} `echo ${UNMERGED_BRANCH} | sed 's/origin\///'`"
+            fi
+        fi
+    done
+
+    echo "$RECENT_UNMERGED_BRANCHES" | xargs > $OUTPUT_FILE
 }
