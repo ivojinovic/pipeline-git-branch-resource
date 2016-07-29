@@ -186,7 +186,7 @@ get_branch_list() {
 
     CUTOFF_DATE="1984-1-1"
     if [ -n "${PARAM_BRANCHES_FROM_DAYS_AGO}" ]; then
-        CUTOFF_DATE=`[ "$(uname)" = Linux ] && date --date="${PARAM_BRANCHES_FROM_DAYS_AGO} days ago" +"%Y"-"%m"-"%d" || date -v-${PARAM_BRANCHES_FROM_DAYS_AGO}d +"%Y"-"%m"-"%d"`
+        CUTOFF_DATE=`[ "$(uname)" = Linux ] && date -d "-${PARAM_BRANCHES_FROM_DAYS_AGO} days" +"%Y"-"%m"-"%d" || date -v-${PARAM_BRANCHES_FROM_DAYS_AGO}d +"%Y"-"%m"-"%d"`
     fi
 
     cd $CONST_APP_GIT_DIR
