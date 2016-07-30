@@ -103,7 +103,8 @@ pipeline_has_correct_groups() {
 
     fly -t $LOC_CONCOURSE_TARGET get-pipeline -p $PARAM_APP_PIPELINE_NAME > current_pipeline.yaml
     CURRENT_DYNAMIC_PIPELINE_GROUPS=$(spruce json current_pipeline.yaml | jq '.["jobs"][] | select(.name | contains("updater")).plan[2].config.params.PARAM_BRANCH_LIST' | xargs)
-    CURRENT_PIPELINE_GROUPS="$STATIC_GROUPS $CURRENT_DYNAMIC_PIPELINE_GROUPS"
+    CURRENT_DYNAMIC_PIPELINE_GROUPS_UNSLASHED=`echo $CURRENT_DYNAMIC_PIPELINE_GROUPS | sed -e "s/\//-/g"`
+    CURRENT_PIPELINE_GROUPS="$STATIC_GROUPS $PARAM_APP_DEV_ALL_BRANCHES_GROUP $CURRENT_DYNAMIC_PIPELINE_GROUPS_UNSLASHED"
 
     EXPECTED_PIPELINE_GROUPS_RAW="$STATIC_GROUPS"
     if [ -n "${APP_DEV_BRANCHES}" ]; then
