@@ -102,7 +102,8 @@ pipeline_has_correct_groups() {
     echo -e "$PARAM_CONCOURSE_USERNAME\n$PARAM_CONCOURSE_PASSWORD\n" | fly -t $LOC_CONCOURSE_TARGET login --concourse-url $PARAM_CONCOURSE_URL
 
     fly -t $LOC_CONCOURSE_TARGET get-pipeline -p $PARAM_APP_PIPELINE_NAME > current_pipeline.yaml
-    CURRENT_PIPELINE_GROUPS=$(spruce json current_pipeline.yaml | jq '.["groups"][].name' | xargs)
+    CURRENT_DYNAMIC_PIPELINE_GROUPS=$(spruce json original_pipeline.yaml | jq '.["jobs"][] | select(.name | contains("updater")).plan[2].config.params.PARAM_BRANCH_LIST' | xargs)
+    CURRENT_PIPELINE_GROUPS="$STATIC_GROUPS $CURRENT_DYNAMIC_PIPELINE_GROUPS"
 
     EXPECTED_PIPELINE_GROUPS_RAW="$STATIC_GROUPS"
     if [ -n "${APP_DEV_BRANCHES}" ]; then
@@ -132,6 +133,19 @@ get_group_for_group_name() {
     printf "name: $GROUP_NAME\njobs:\n" > group_node.yaml
     sed 's~jobs:~~g' $INPUT_FILE >> group_node.yaml
     spruce json group_node.yaml | jq '{"groups": [.]}' | json2yaml > $OUTPUT_FILE
+}
+
+get_branch_list_into_updater_param() {
+    BRANCH_LIST=$1
+    OUTPUT_FILE=$2
+
+    printf "PARAM_BRANCH_LIST: $BRANCH_LIST" > param_branch_list_start.yaml
+    spruce json param_branch_list_start.yaml | \
+        jq '{"params":.}' | \
+        jq '{"config":.}' | \
+        jq '{"plan":[{"get" : "update-script"}, {"get" : "new-branches-watcher", trigger: true}, .]}' | \
+        jq '{"jobs":[.]}' | \
+        json2yaml > $OUTPUT_FILE
 }
 
 process_template_for_each_branch() {
