@@ -157,6 +157,8 @@ process_template_for_each_branch() {
     FULL_TABS_FOR_EACH_BRANCH_FILE=$5
     JOB_LIST_FOR_ALL_BRANCHES_FILE=$6
 
+    APP_BRANCHES_LENGTH=${#APP_BRANCHES}
+
     IFS=' ' read -r -a APP_BRANCHES_ARRAY <<< "$APP_BRANCHES"
 
     FIRST_BRANCH=true
@@ -174,8 +176,14 @@ process_template_for_each_branch() {
         sed 's~'"$APP_TEMPLATE_GROUP"'~'"$BRANCH_NAME_UNSLASHED"'~g' $JOB_LIST_FOR_TEMPLATE_FILE > job_list_for_this_branch.yaml
         printf "\n" >> job_list_for_this_branch.yaml
 
+        if [ "$APP_BRANCHES_LENGTH" -gt "100" ]; then
+             GROUP_NAME="${BRANCH_NAME_UNSLASHED:0:6}"..."${BRANCH_NAME_UNSLASHED:(-6)}"
+        else
+             GROUP_NAME="$BRANCH_NAME_UNSLASHED"
+        fi
+
         spruce merge job_list_for_this_branch.yaml > job_array_for_this_branch.yaml
-        get_group_for_group_name job_array_for_this_branch.yaml $BRANCH_NAME_UNSLASHED group_for_this_branch.yaml
+        get_group_for_group_name job_array_for_this_branch.yaml $GROUP_NAME group_for_this_branch.yaml
 
         # now add the branch pipeline to the pipeline of all branches
         if [ $FIRST_BRANCH == true ] ; then
