@@ -177,7 +177,7 @@ process_template_for_each_branch() {
         printf "\n" >> job_list_for_this_branch.yaml
 
         if [ "$APP_BRANCHES_LENGTH" -gt "100" ]; then
-             GROUP_NAME="${BRANCH_NAME_UNSLASHED:0:6}"..."${BRANCH_NAME_UNSLASHED:(-6)}"
+             GROUP_NAME="${BRANCH_NAME_UNSLASHED:0:6}"."${BRANCH_NAME_UNSLASHED:(-6)}"
         else
              GROUP_NAME="$BRANCH_NAME_UNSLASHED"
         fi
