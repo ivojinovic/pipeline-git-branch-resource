@@ -102,7 +102,7 @@ pipeline_has_correct_groups() {
     echo -e "$PARAM_CONCOURSE_USERNAME\n$PARAM_CONCOURSE_PASSWORD\n" | fly -t $LOC_CONCOURSE_TARGET login --concourse-url $PARAM_CONCOURSE_URL
 
     fly -t $LOC_CONCOURSE_TARGET get-pipeline -p $PARAM_APP_PIPELINE_NAME > current_pipeline.yaml
-    CURRENT_DYNAMIC_PIPELINE_GROUPS=$(spruce json original_pipeline.yaml | jq '.["jobs"][] | select(.name | contains("updater")).plan[2].config.params.PARAM_BRANCH_LIST' | xargs)
+    CURRENT_DYNAMIC_PIPELINE_GROUPS=$(spruce json current_pipeline.yaml | jq '.["jobs"][] | select(.name | contains("updater")).plan[2].config.params.PARAM_BRANCH_LIST' | xargs)
     CURRENT_PIPELINE_GROUPS="$STATIC_GROUPS $CURRENT_DYNAMIC_PIPELINE_GROUPS"
 
     EXPECTED_PIPELINE_GROUPS_RAW="$STATIC_GROUPS"
