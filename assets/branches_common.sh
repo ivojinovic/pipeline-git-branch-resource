@@ -150,6 +150,17 @@ get_branch_list_into_updater_param() {
 }
 
 process_template_for_each_branch() {
+
+    BRANCH_NAME_FOR_GROUP="rename-user-to-driver"
+    BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
+    echo "Try matching"
+    echo "-${BRANCH_NAME_FOR_GROUP}-"
+    echo "$BRANCH_NAME_REG_EX"
+    [[ ${BRANCH_NAME_FOR_GROUP} =~ $BRANCH_NAME_REG_EX ]]
+    echo "Get match length - 3"
+    BASH_REMATCH_LENGTH=${#BASH_REMATCH}
+    echo $BASH_REMATCH_LENGTH
+
     LANE_FOR_TEMPLATE_FILE=$1
     JOB_LIST_FOR_TEMPLATE_FILE=$2
     APP_BRANCHES=$3
@@ -164,6 +175,17 @@ process_template_for_each_branch() {
     FIRST_BRANCH=true
     for BRANCH_NAME in "${APP_BRANCHES_ARRAY[@]}"
     do
+
+        BRANCH_NAME_FOR_GROUP="rename-user-to-driver"
+        BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
+        echo "Try matching"
+        echo "-${BRANCH_NAME_FOR_GROUP}-"
+        echo "$BRANCH_NAME_REG_EX"
+        [[ ${BRANCH_NAME_FOR_GROUP} =~ $BRANCH_NAME_REG_EX ]]
+        echo "Get match length - 2"
+        BASH_REMATCH_LENGTH=${#BASH_REMATCH}
+        echo $BASH_REMATCH_LENGTH
+
         # Can't use slashes in job names
         BRANCH_NAME_UNSLASHED=`echo $BRANCH_NAME | sed -e "s/\//-/g"`
 
@@ -183,6 +205,17 @@ process_template_for_each_branch() {
             BRANCH_NAME_FOR_GROUP_2=${BRANCH_NAME_FOR_GROUP_1/fix-/""}
             BRANCH_NAME_FOR_GROUP=${BRANCH_NAME_FOR_GROUP_2/extraction/ext}
             echo $BRANCH_NAME_FOR_GROUP
+
+    BRANCH_NAME_FOR_GROUP="rename-user-to-driver"
+    BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
+    echo "Try matching"
+    echo "-${BRANCH_NAME_FOR_GROUP}-"
+    echo "$BRANCH_NAME_REG_EX"
+    [[ ${BRANCH_NAME_FOR_GROUP} =~ $BRANCH_NAME_REG_EX ]]
+    echo "Get match length - 1"
+    BASH_REMATCH_LENGTH=${#BASH_REMATCH}
+    echo $BASH_REMATCH_LENGTH
+
             BRANCH_NAME_FOR_GROUP_LENGTH=${#BRANCH_NAME_FOR_GROUP}
             if [ "$BRANCH_NAME_FOR_GROUP_LENGTH" -gt "13" ]; then
                 echo "Only shorten them if they are longer than 13 chars"
