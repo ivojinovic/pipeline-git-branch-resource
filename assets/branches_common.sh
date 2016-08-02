@@ -182,18 +182,19 @@ process_template_for_each_branch() {
             BRANCH_NAME_FOR_GROUP_1=${BRANCH_NAME_UNSLASHED/feature-/""}
             BRANCH_NAME_FOR_GROUP_2=${BRANCH_NAME_FOR_GROUP_1/fix-/""}
             BRANCH_NAME_FOR_GROUP=${BRANCH_NAME_FOR_GROUP_2/extraction/ext}
+            echo $BRANCH_NAME_FOR_GROUP
             BRANCH_NAME_FOR_GROUP_LENGTH=${#BRANCH_NAME_FOR_GROUP}
             if [ "$BRANCH_NAME_FOR_GROUP_LENGTH" -gt "13" ]; then
-                # Only shorten them if they are longer than 13 chars
+                echo "Only shorten them if they are longer than 13 chars"
                 BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
                 [[ $BRANCH_NAME_FOR_GROUP =~ $BRANCH_NAME_REG_EX ]]
                 BASH_REMATCH_LENGTH=${#BASH_REMATCH}
                 if [ "$BASH_REMATCH_LENGTH" -gt "0" ] && [ "${ALL_GROUP_NAMES/$BASH_REMATCH}" = "$ALL_GROUP_NAMES" ]; then
-                    # Show only the JIRA ID where possible, and handle IDs used in more than 1 branch name
+                    echo "Show only the JIRA ID where possible, and handle IDs used in more than 1 branch name"
                     GROUP_NAME=${BASH_REMATCH}
                 else
+                    echo "Show just 1st 13 characters"
                     GROUP_NAME="${BRANCH_NAME_FOR_GROUP:0:13}"
-                    #."${BRANCH_NAME_FOR_GROUP:(-6)}"
                 fi
             else
                 GROUP_NAME="${BRANCH_NAME_FOR_GROUP}"
@@ -202,6 +203,7 @@ process_template_for_each_branch() {
              GROUP_NAME="$BRANCH_NAME_FOR_GROUP"
         fi
         ALL_GROUP_NAMES="${ALL_GROUP_NAMES}${GROUP_NAME}"
+        echo "$ALL_GROUP_NAMES"
 
         spruce merge job_list_for_this_branch.yaml > job_array_for_this_branch.yaml
         get_group_for_group_name job_array_for_this_branch.yaml $GROUP_NAME group_for_this_branch.yaml
