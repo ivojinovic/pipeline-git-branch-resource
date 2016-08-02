@@ -52,6 +52,8 @@ export PARAM_APP_SLAHES_OK_FLAG=-slashes-ok
 # Create a pipeline for them
 #cd $this_directory
 
-LOC_APP_DEV_BRANCHES="fix/rename-user-to-driver fix/ride-distance-zero_CORE-340 milestone-1-report_ZC-629 six-eight-extraction six-nine-extraction zc-501 zc-504 zc-506"
+LOC_APP_DEV_BRANCHES="rename-user-to-driver"
+
+match_test
 
 ./set_dev_branches_pipeline.sh $CONCOURSE_TARGET DOCKER "$LOC_APP_DEV_BRANCHES" "$LOC_APP_HOT_BRANCHES"
