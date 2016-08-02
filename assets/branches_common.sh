@@ -187,13 +187,22 @@ process_template_for_each_branch() {
             if [ "$BRANCH_NAME_FOR_GROUP_LENGTH" -gt "13" ]; then
                 echo "Only shorten them if they are longer than 13 chars"
                 BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
+                echo "Try matching"
                 [[ $BRANCH_NAME_FOR_GROUP =~ $BRANCH_NAME_REG_EX ]]
+                echo "Get match length"
                 BASH_REMATCH_LENGTH=${#BASH_REMATCH}
-                if [ "$BASH_REMATCH_LENGTH" -gt "0" ] && [ "${ALL_GROUP_NAMES/$BASH_REMATCH}" = "$ALL_GROUP_NAMES" ]; then
-                    echo "Show only the JIRA ID where possible, and handle IDs used in more than 1 branch name"
-                    GROUP_NAME=${BASH_REMATCH}
+                echo "Check match length"
+                if [ "$BASH_REMATCH_LENGTH" -gt "0" ]; then
+                    echo "Match found"
+                    if [ "${ALL_GROUP_NAMES/$BASH_REMATCH}" = "$ALL_GROUP_NAMES" ]; then
+                        echo "Show only the JIRA ID where possible, and handle IDs used in more than 1 branch name"
+                        GROUP_NAME=${BASH_REMATCH}
+                    else
+                        echo "Show just 1st 13 characters - 1"
+                        GROUP_NAME="${BRANCH_NAME_FOR_GROUP:0:13}"
+                    fi
                 else
-                    echo "Show just 1st 13 characters"
+                    echo "Show just 1st 13 characters - 2"
                     GROUP_NAME="${BRANCH_NAME_FOR_GROUP:0:13}"
                 fi
             else
@@ -202,6 +211,9 @@ process_template_for_each_branch() {
         else
              GROUP_NAME="$BRANCH_NAME_FOR_GROUP"
         fi
+        echo "---"
+        echo "Final group name $GROUP_NAME"
+        echo "---"
         ALL_GROUP_NAMES="${ALL_GROUP_NAMES}${GROUP_NAME}"
         echo "$ALL_GROUP_NAMES"
 
