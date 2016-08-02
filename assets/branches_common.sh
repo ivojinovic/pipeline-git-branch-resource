@@ -164,6 +164,7 @@ process_template_for_each_branch() {
     FIRST_BRANCH=true
     for BRANCH_NAME in "${APP_BRANCHES_ARRAY[@]}"
     do
+        echo "Processing template for branch: $BRANCH_NAME"
         # Can't use slashes in job names
         BRANCH_NAME_UNSLASHED=`echo $BRANCH_NAME | sed -e "s/\//-/g"`
 
@@ -202,11 +203,12 @@ process_template_for_each_branch() {
                 GROUP_NAME="${BRANCH_NAME_FOR_GROUP}"
             fi
         else
-             GROUP_NAME="$BRANCH_NAME_FOR_GROUP"
+             GROUP_NAME="$BRANCH_NAME_UNSLASHED"
         fi
         ALL_GROUP_NAMES="${ALL_GROUP_NAMES}${GROUP_NAME}"
 
         spruce merge job_list_for_this_branch.yaml > job_array_for_this_branch.yaml
+        echo "Branch lane will be placed in group: $GROUP_NAME"
         get_group_for_group_name job_array_for_this_branch.yaml $GROUP_NAME group_for_this_branch.yaml
 
         # now add the branch pipeline to the pipeline of all branches
