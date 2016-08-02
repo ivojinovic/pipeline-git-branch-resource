@@ -153,7 +153,7 @@ process_template_for_each_branch() {
 
     BRANCH_NAME_FOR_GROUP="rename-user-to-driver"
     BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
-    echo "Try matching"
+    echo "Try matching - x2"
     echo "-${BRANCH_NAME_FOR_GROUP}-"
     echo "$BRANCH_NAME_REG_EX"
     [[ ${BRANCH_NAME_FOR_GROUP} =~ $BRANCH_NAME_REG_EX ]]
@@ -301,7 +301,7 @@ get_branch_list() {
 match_test() {
     BRANCH_NAME_FOR_GROUP="rename-user-to-driver"
     BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
-    echo "Try matching"
+    echo "Try matching - x1"
     echo "-${BRANCH_NAME_FOR_GROUP}-"
     echo "$BRANCH_NAME_REG_EX"
     [[ ${BRANCH_NAME_FOR_GROUP} =~ $BRANCH_NAME_REG_EX ]]

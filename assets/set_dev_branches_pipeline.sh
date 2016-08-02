@@ -32,6 +32,7 @@ get_lane_for_group_name original_pipeline.yaml $PARAM_APP_HOT_TEMPLATE_GROUP lan
 # Use the template for each one of the branches passed in
 if [ -n "${APP_DEV_BRANCHES}" ]; then
     get_jobs_list_for_group original_pipeline.yaml $PARAM_APP_DEV_TEMPLATE_GROUP job_list_for_dev_template.yaml
+    match_test
     process_template_for_each_branch lane_for_dev_template.yaml job_list_for_dev_template.yaml "$APP_DEV_BRANCHES" $PARAM_APP_DEV_TEMPLATE_GROUP full_tabs_for_each_dev_branch.yaml job_list_for_all_dev_branches.yaml
     get_group_for_group_name job_list_for_all_dev_branches.yaml $PARAM_APP_DEV_ALL_BRANCHES_GROUP group_for_all_dev_branches.yaml
     GROUP_FOR_ALL_DEV_BRANCHES_FILE="group_for_all_dev_branches.yaml"
