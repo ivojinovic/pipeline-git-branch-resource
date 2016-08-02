@@ -188,6 +188,8 @@ process_template_for_each_branch() {
                 echo "Only shorten them if they are longer than 13 chars"
                 BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
                 echo "Try matching"
+                echo "-${BRANCH_NAME_FOR_GROUP}-"
+                echo "$BRANCH_NAME_REG_EX"
                 [[ ${BRANCH_NAME_FOR_GROUP} =~ $BRANCH_NAME_REG_EX ]]
                 echo "Get match length"
                 BASH_REMATCH_LENGTH=${#BASH_REMATCH}
