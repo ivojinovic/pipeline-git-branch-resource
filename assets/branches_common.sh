@@ -182,7 +182,6 @@ process_template_for_each_branch() {
             BRANCH_NAME_FOR_GROUP_1=${BRANCH_NAME_UNSLASHED/feature-/""}
             BRANCH_NAME_FOR_GROUP_2=${BRANCH_NAME_FOR_GROUP_1/fix-/""}
             BRANCH_NAME_FOR_GROUP=${BRANCH_NAME_FOR_GROUP_2/extraction/ext}
-            echo $BRANCH_NAME_FOR_GROUP
             BRANCH_NAME_FOR_GROUP_LENGTH=${#BRANCH_NAME_FOR_GROUP}
             if [ "$BRANCH_NAME_FOR_GROUP_LENGTH" -gt "13" ]; then
                 # Only shorten them if they are longer than 13 chars
