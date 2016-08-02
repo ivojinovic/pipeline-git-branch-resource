@@ -150,17 +150,6 @@ get_branch_list_into_updater_param() {
 }
 
 process_template_for_each_branch() {
-
-    BRANCH_NAME_FOR_GROUP="rename-user-to-driver"
-    BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
-    echo "Try matching - x2"
-    echo "-${BRANCH_NAME_FOR_GROUP}-"
-    echo "$BRANCH_NAME_REG_EX"
-    [[ ${BRANCH_NAME_FOR_GROUP} =~ $BRANCH_NAME_REG_EX ]]
-    echo "Get match length - 3"
-    BASH_REMATCH_LENGTH=${#BASH_REMATCH}
-    echo $BASH_REMATCH_LENGTH
-
     LANE_FOR_TEMPLATE_FILE=$1
     JOB_LIST_FOR_TEMPLATE_FILE=$2
     APP_BRANCHES=$3
@@ -175,17 +164,6 @@ process_template_for_each_branch() {
     FIRST_BRANCH=true
     for BRANCH_NAME in "${APP_BRANCHES_ARRAY[@]}"
     do
-
-        BRANCH_NAME_FOR_GROUP="rename-user-to-driver"
-        BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
-        echo "Try matching"
-        echo "-${BRANCH_NAME_FOR_GROUP}-"
-        echo "$BRANCH_NAME_REG_EX"
-        [[ ${BRANCH_NAME_FOR_GROUP} =~ $BRANCH_NAME_REG_EX ]]
-        echo "Get match length - 2"
-        BASH_REMATCH_LENGTH=${#BASH_REMATCH}
-        echo $BASH_REMATCH_LENGTH
-
         # Can't use slashes in job names
         BRANCH_NAME_UNSLASHED=`echo $BRANCH_NAME | sed -e "s/\//-/g"`
 
@@ -198,77 +176,52 @@ process_template_for_each_branch() {
         sed 's~'"$APP_TEMPLATE_GROUP"'~'"$BRANCH_NAME_UNSLASHED"'~g' $JOB_LIST_FOR_TEMPLATE_FILE > job_list_for_this_branch.yaml
         printf "\n" >> job_list_for_this_branch.yaml
 
-        if [ "$APP_BRANCHES_LENGTH" -gt "1" ]; then
+        if [ "$APP_BRANCHES_LENGTH" -gt "100" ]; then
             # We need to hanle wrapping of group names
             # 1st, shorten some common prefixes and suffixes
             BRANCH_NAME_FOR_GROUP_1=${BRANCH_NAME_UNSLASHED/feature-/""}
             BRANCH_NAME_FOR_GROUP_2=${BRANCH_NAME_FOR_GROUP_1/fix-/""}
             BRANCH_NAME_FOR_GROUP=${BRANCH_NAME_FOR_GROUP_2/extraction/ext}
             echo $BRANCH_NAME_FOR_GROUP
-
-    BRANCH_NAME_FOR_GROUP="rename-user-to-driver"
-    BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
-    echo "Try matching"
-    echo "-${BRANCH_NAME_FOR_GROUP}-"
-    echo "$BRANCH_NAME_REG_EX"
-    [[ ${BRANCH_NAME_FOR_GROUP} =~ $BRANCH_NAME_REG_EX ]]
-    echo "Get match length - 1"
-    BASH_REMATCH_LENGTH=${#BASH_REMATCH}
-    echo $BASH_REMATCH_LENGTH
-
             BRANCH_NAME_FOR_GROUP_LENGTH=${#BRANCH_NAME_FOR_GROUP}
             if [ "$BRANCH_NAME_FOR_GROUP_LENGTH" -gt "13" ]; then
-                echo "Only shorten them if they are longer than 13 chars"
+                # Only shorten them if they are longer than 13 chars
                 BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
-                echo "Try matching"
-                echo "-${BRANCH_NAME_FOR_GROUP}-"
-                echo "$BRANCH_NAME_REG_EX"
-                [[ ${BRANCH_NAME_FOR_GROUP} =~ $BRANCH_NAME_REG_EX ]]
-                echo "Get match length"
+                set +e
+                [[ $BRANCH_NAME_FOR_GROUP =~ $BRANCH_NAME_REG_EX ]]
+                set -e
                 BASH_REMATCH_LENGTH=${#BASH_REMATCH}
-                echo "Check match length"
-                echo $BASH_REMATCH_LENGTH
-#                if [ "$BASH_REMATCH_LENGTH" -gt "0" ]; then
-#                    echo "Match found"
-#                    if [ "${ALL_GROUP_NAMES/$BASH_REMATCH}" = "$ALL_GROUP_NAMES" ]; then
-#                        echo "Show only the JIRA ID where possible, and handle IDs used in more than 1 branch name"
-#                        GROUP_NAME=${BASH_REMATCH}
-#                    else
-#                        echo "Show just 1st 13 characters - 1"
-#                        GROUP_NAME="${BRANCH_NAME_FOR_GROUP:0:13}"
-#                    fi
-#                else
-#                    echo "Show just 1st 13 characters - 2"
-#                    GROUP_NAME="${BRANCH_NAME_FOR_GROUP:0:13}"
-#                fi
+                if [ "$BASH_REMATCH_LENGTH" -gt "0" ] && [ "${ALL_GROUP_NAMES/$BASH_REMATCH}" = "$ALL_GROUP_NAMES" ]; then
+                    # Show only the JIRA ID where possible, and handle IDs used in more than 1 branch name
+                    GROUP_NAME=${BASH_REMATCH}
+                else
+                    #Show just 1st 13 characters
+                    GROUP_NAME="${BRANCH_NAME_FOR_GROUP:0:13}"
+                fi
             else
                 GROUP_NAME="${BRANCH_NAME_FOR_GROUP}"
             fi
         else
              GROUP_NAME="$BRANCH_NAME_FOR_GROUP"
         fi
-#        echo "---"
-#        echo "Final group name $GROUP_NAME"
-#        echo "---"
-#        ALL_GROUP_NAMES="${ALL_GROUP_NAMES}${GROUP_NAME}"
-#        echo "$ALL_GROUP_NAMES"
-#
-#        spruce merge job_list_for_this_branch.yaml > job_array_for_this_branch.yaml
-#        get_group_for_group_name job_array_for_this_branch.yaml $GROUP_NAME group_for_this_branch.yaml
-#
-#        # now add the branch pipeline to the pipeline of all branches
-#        if [ $FIRST_BRANCH == true ] ; then
-#            FIRST_BRANCH=false
-#            echo "Starting with $BRANCH_NAME_UNSLASHED"
-#            spruce merge lane_for_this_branch.yaml group_for_this_branch.yaml > $FULL_TABS_FOR_EACH_BRANCH_FILE
-#            # do the same for the main group section
-#            spruce merge job_list_for_this_branch.yaml > $JOB_LIST_FOR_ALL_BRANCHES_FILE
-#        else
-#            echo "Adding Branch $BRANCH_NAME_UNSLASHED"
-#            spruce merge $FULL_TABS_FOR_EACH_BRANCH_FILE lane_for_this_branch.yaml group_for_this_branch.yaml >> $FULL_TABS_FOR_EACH_BRANCH_FILE
-#            # do the same for the main group section
-#            spruce merge $JOB_LIST_FOR_ALL_BRANCHES_FILE job_list_for_this_branch.yaml >> $JOB_LIST_FOR_ALL_BRANCHES_FILE
-#        fi
+        ALL_GROUP_NAMES="${ALL_GROUP_NAMES}${GROUP_NAME}"
+
+        spruce merge job_list_for_this_branch.yaml > job_array_for_this_branch.yaml
+        get_group_for_group_name job_array_for_this_branch.yaml $GROUP_NAME group_for_this_branch.yaml
+
+        # now add the branch pipeline to the pipeline of all branches
+        if [ $FIRST_BRANCH == true ] ; then
+            FIRST_BRANCH=false
+            echo "Starting with $BRANCH_NAME_UNSLASHED"
+            spruce merge lane_for_this_branch.yaml group_for_this_branch.yaml > $FULL_TABS_FOR_EACH_BRANCH_FILE
+            # do the same for the main group section
+            spruce merge job_list_for_this_branch.yaml > $JOB_LIST_FOR_ALL_BRANCHES_FILE
+        else
+            echo "Adding Branch $BRANCH_NAME_UNSLASHED"
+            spruce merge $FULL_TABS_FOR_EACH_BRANCH_FILE lane_for_this_branch.yaml group_for_this_branch.yaml >> $FULL_TABS_FOR_EACH_BRANCH_FILE
+            # do the same for the main group section
+            spruce merge $JOB_LIST_FOR_ALL_BRANCHES_FILE job_list_for_this_branch.yaml >> $JOB_LIST_FOR_ALL_BRANCHES_FILE
+        fi
     done
 }
 
@@ -296,16 +249,4 @@ get_branch_list() {
     done
 
     echo "$RECENT_UNMERGED_BRANCHES" | xargs > $OUTPUT_FILE
-}
-
-match_test() {
-    BRANCH_NAME_FOR_GROUP="rename-user-to-driver"
-    BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
-    echo "Try matching - x1"
-    echo "-${BRANCH_NAME_FOR_GROUP}-"
-    echo "$BRANCH_NAME_REG_EX"
-    [[ ${BRANCH_NAME_FOR_GROUP} =~ $BRANCH_NAME_REG_EX ]]
-    echo "Get match length"
-    BASH_REMATCH_LENGTH=${#BASH_REMATCH}
-    echo $BASH_REMATCH_LENGTH
 }

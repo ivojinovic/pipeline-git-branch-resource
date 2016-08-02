@@ -3,6 +3,8 @@
 # cleanup
 rm *.yaml
 
+set -e
+
 CONCOURSE_TARGET=$1
 LOCAL_OR_CONCOURSE=$2
 APP_DEV_BRANCHES=$3
@@ -19,14 +21,6 @@ fi
 if [ "$LOCAL_OR_CONCOURSE" == "CONCOURSE" ] ; then
     source /opt/resource/branches_common.sh
 fi
-
-echo " try 1"
-    match_test
-
-set -e
-
-echo " try 2"
-    match_test
 
 # Get the original pipeline
 fly -t $CONCOURSE_TARGET get-pipeline -p $PARAM_APP_PIPELINE_NAME > original_pipeline.yaml
