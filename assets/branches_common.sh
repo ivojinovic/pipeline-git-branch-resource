@@ -194,47 +194,48 @@ process_template_for_each_branch() {
                 echo "Get match length"
                 BASH_REMATCH_LENGTH=${#BASH_REMATCH}
                 echo "Check match length"
-                if [ "$BASH_REMATCH_LENGTH" -gt "0" ]; then
-                    echo "Match found"
-                    if [ "${ALL_GROUP_NAMES/$BASH_REMATCH}" = "$ALL_GROUP_NAMES" ]; then
-                        echo "Show only the JIRA ID where possible, and handle IDs used in more than 1 branch name"
-                        GROUP_NAME=${BASH_REMATCH}
-                    else
-                        echo "Show just 1st 13 characters - 1"
-                        GROUP_NAME="${BRANCH_NAME_FOR_GROUP:0:13}"
-                    fi
-                else
-                    echo "Show just 1st 13 characters - 2"
-                    GROUP_NAME="${BRANCH_NAME_FOR_GROUP:0:13}"
-                fi
+                echo $BASH_REMATCH_LENGTH
+#                if [ "$BASH_REMATCH_LENGTH" -gt "0" ]; then
+#                    echo "Match found"
+#                    if [ "${ALL_GROUP_NAMES/$BASH_REMATCH}" = "$ALL_GROUP_NAMES" ]; then
+#                        echo "Show only the JIRA ID where possible, and handle IDs used in more than 1 branch name"
+#                        GROUP_NAME=${BASH_REMATCH}
+#                    else
+#                        echo "Show just 1st 13 characters - 1"
+#                        GROUP_NAME="${BRANCH_NAME_FOR_GROUP:0:13}"
+#                    fi
+#                else
+#                    echo "Show just 1st 13 characters - 2"
+#                    GROUP_NAME="${BRANCH_NAME_FOR_GROUP:0:13}"
+#                fi
             else
                 GROUP_NAME="${BRANCH_NAME_FOR_GROUP}"
             fi
         else
              GROUP_NAME="$BRANCH_NAME_FOR_GROUP"
         fi
-        echo "---"
-        echo "Final group name $GROUP_NAME"
-        echo "---"
-        ALL_GROUP_NAMES="${ALL_GROUP_NAMES}${GROUP_NAME}"
-        echo "$ALL_GROUP_NAMES"
-
-        spruce merge job_list_for_this_branch.yaml > job_array_for_this_branch.yaml
-        get_group_for_group_name job_array_for_this_branch.yaml $GROUP_NAME group_for_this_branch.yaml
-
-        # now add the branch pipeline to the pipeline of all branches
-        if [ $FIRST_BRANCH == true ] ; then
-            FIRST_BRANCH=false
-            echo "Starting with $BRANCH_NAME_UNSLASHED"
-            spruce merge lane_for_this_branch.yaml group_for_this_branch.yaml > $FULL_TABS_FOR_EACH_BRANCH_FILE
-            # do the same for the main group section
-            spruce merge job_list_for_this_branch.yaml > $JOB_LIST_FOR_ALL_BRANCHES_FILE
-        else
-            echo "Adding Branch $BRANCH_NAME_UNSLASHED"
-            spruce merge $FULL_TABS_FOR_EACH_BRANCH_FILE lane_for_this_branch.yaml group_for_this_branch.yaml >> $FULL_TABS_FOR_EACH_BRANCH_FILE
-            # do the same for the main group section
-            spruce merge $JOB_LIST_FOR_ALL_BRANCHES_FILE job_list_for_this_branch.yaml >> $JOB_LIST_FOR_ALL_BRANCHES_FILE
-        fi
+#        echo "---"
+#        echo "Final group name $GROUP_NAME"
+#        echo "---"
+#        ALL_GROUP_NAMES="${ALL_GROUP_NAMES}${GROUP_NAME}"
+#        echo "$ALL_GROUP_NAMES"
+#
+#        spruce merge job_list_for_this_branch.yaml > job_array_for_this_branch.yaml
+#        get_group_for_group_name job_array_for_this_branch.yaml $GROUP_NAME group_for_this_branch.yaml
+#
+#        # now add the branch pipeline to the pipeline of all branches
+#        if [ $FIRST_BRANCH == true ] ; then
+#            FIRST_BRANCH=false
+#            echo "Starting with $BRANCH_NAME_UNSLASHED"
+#            spruce merge lane_for_this_branch.yaml group_for_this_branch.yaml > $FULL_TABS_FOR_EACH_BRANCH_FILE
+#            # do the same for the main group section
+#            spruce merge job_list_for_this_branch.yaml > $JOB_LIST_FOR_ALL_BRANCHES_FILE
+#        else
+#            echo "Adding Branch $BRANCH_NAME_UNSLASHED"
+#            spruce merge $FULL_TABS_FOR_EACH_BRANCH_FILE lane_for_this_branch.yaml group_for_this_branch.yaml >> $FULL_TABS_FOR_EACH_BRANCH_FILE
+#            # do the same for the main group section
+#            spruce merge $JOB_LIST_FOR_ALL_BRANCHES_FILE job_list_for_this_branch.yaml >> $JOB_LIST_FOR_ALL_BRANCHES_FILE
+#        fi
     done
 }
 
