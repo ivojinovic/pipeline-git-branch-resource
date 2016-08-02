@@ -12,7 +12,13 @@ APP_HOT_BRANCHES=$4
 
 if [ "$LOCAL_OR_CONCOURSE" == "LOCAL" ] ; then
     source ./../assets/branches_common.sh
-else
+fi
+
+if [ "$LOCAL_OR_CONCOURSE" == "DOCKER" ] ; then
+    source /opt/resource/branches_common.sh
+fi
+
+if [ "$LOCAL_OR_CONCOURSE" == "CONCOURSE" ] ; then
     source /opt/resource/branches_common.sh
 fi
 
@@ -64,6 +70,10 @@ get_group_by_name original_pipeline.yaml $PARAM_APP_UPDATER_GROUP group_for_upda
 spruce merge group_for_master.yaml group_for_updater.yaml $GROUP_FOR_ALL_DEV_BRANCHES_FILE static_lanes_and_dynamic_tabs.yaml > expanded_pipeline.yaml
 
 if [ "$LOCAL_OR_CONCOURSE" == "LOCAL" ] ; then
+    fly -t $CONCOURSE_TARGET set-pipeline -p $PARAM_APP_PIPELINE_NAME -c expanded_pipeline.yaml
+fi
+
+if [ "$LOCAL_OR_CONCOURSE" == "DOCKER" ] ; then
     fly -t $CONCOURSE_TARGET set-pipeline -p $PARAM_APP_PIPELINE_NAME -c expanded_pipeline.yaml
 fi
 

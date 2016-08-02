@@ -54,4 +54,4 @@ export PARAM_APP_SLAHES_OK_FLAG=-slashes-ok
 
 LOC_APP_DEV_BRANCHES="core-243-delete-car-group core-38-lists-0-items dev feature/core-243-delete-car-group feature/core306-su-user-image feature/filter-community-JUNGLE-897 fix/end-ride-odometer_CORE-280 fix/pretty-print-json_CORE-238 fix/remove-hotspot-contact_CORE-157 fix/rename-user-to-driver fix/ride-distance-zero_CORE-340 milestone-1-report_ZC-629 six-eight-extraction six-nine-extraction zc-501 zc-504 zc-506"
 
-./set_dev_branches_pipeline.sh $CONCOURSE_TARGET LOCAL "$LOC_APP_DEV_BRANCHES" "$LOC_APP_HOT_BRANCHES"
+./set_dev_branches_pipeline.sh $CONCOURSE_TARGET DOCKER "$LOC_APP_DEV_BRANCHES" "$LOC_APP_HOT_BRANCHES"
