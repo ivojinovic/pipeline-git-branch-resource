@@ -178,23 +178,29 @@ process_template_for_each_branch() {
 
         if [ "$APP_BRANCHES_LENGTH" -gt "100" ]; then
             # We need to hanle wrapping of group names
-            BRANCH_NAME_UNSLASHED_LENGTH=${#BRANCH_NAME_UNSLASHED}
-            if [ "$BRANCH_NAME_UNSLASHED_LENGTH" -gt "10" ]; then
-                # Only shorten them if they are longer than 10 chars
+            # 1st, shorten some common prefixes and suffixes
+            BRANCH_NAME_FOR_GROUP_1=${BRANCH_NAME_UNSLASHED/feature-/""}
+            BRANCH_NAME_FOR_GROUP_2=${BRANCH_NAME_FOR_GROUP_1/fix-/""}
+            BRANCH_NAME_FOR_GROUP=${BRANCH_NAME_FOR_GROUP_2/extraction/ext}
+            echo $BRANCH_NAME_FOR_GROUP
+            BRANCH_NAME_FOR_GROUP_LENGTH=${#BRANCH_NAME_FOR_GROUP}
+            if [ "$BRANCH_NAME_FOR_GROUP_LENGTH" -gt "13" ]; then
+                # Only shorten them if they are longer than 13 chars
                 BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
-                [[ $BRANCH_NAME_UNSLASHED =~ $BRANCH_NAME_REG_EX ]]
+                [[ $BRANCH_NAME_FOR_GROUP =~ $BRANCH_NAME_REG_EX ]]
                 BASH_REMATCH_LENGTH=${#BASH_REMATCH}
                 if [ "$BASH_REMATCH_LENGTH" -gt "0" ] && [ "${ALL_GROUP_NAMES/$BASH_REMATCH}" = "$ALL_GROUP_NAMES" ]; then
                     # Show only the JIRA ID where possible, and handle IDs used in more than 1 branch name
                     GROUP_NAME=${BASH_REMATCH}
                 else
-                    GROUP_NAME="${BRANCH_NAME_UNSLASHED:0:6}"."${BRANCH_NAME_UNSLASHED:(-6)}"
+                    GROUP_NAME="${BRANCH_NAME_FOR_GROUP:0:13}"
+                    #."${BRANCH_NAME_FOR_GROUP:(-6)}"
                 fi
             else
-                GROUP_NAME="${BRANCH_NAME_UNSLASHED}"
+                GROUP_NAME="${BRANCH_NAME_FOR_GROUP}"
             fi
         else
-             GROUP_NAME="$BRANCH_NAME_UNSLASHED"
+             GROUP_NAME="$BRANCH_NAME_FOR_GROUP"
         fi
         ALL_GROUP_NAMES="${ALL_GROUP_NAMES}${GROUP_NAME}"
 
