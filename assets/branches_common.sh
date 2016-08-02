@@ -176,7 +176,7 @@ process_template_for_each_branch() {
         sed 's~'"$APP_TEMPLATE_GROUP"'~'"$BRANCH_NAME_UNSLASHED"'~g' $JOB_LIST_FOR_TEMPLATE_FILE > job_list_for_this_branch.yaml
         printf "\n" >> job_list_for_this_branch.yaml
 
-        if [ "$APP_BRANCHES_LENGTH" -gt "100" ]; then
+        if [ "$APP_BRANCHES_LENGTH" -gt "1" ]; then
             # We need to hanle wrapping of group names
             # 1st, shorten some common prefixes and suffixes
             BRANCH_NAME_FOR_GROUP_1=${BRANCH_NAME_UNSLASHED/feature-/""}
