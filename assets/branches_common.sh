@@ -177,15 +177,26 @@ process_template_for_each_branch() {
         printf "\n" >> job_list_for_this_branch.yaml
 
         if [ "$APP_BRANCHES_LENGTH" -gt "100" ]; then
+            # We need to hanle wrapping of group names
             BRANCH_NAME_UNSLASHED_LENGTH=${#BRANCH_NAME_UNSLASHED}
-            if [ "$BRANCH_NAME_UNSLASHED_LENGTH" -gt "6" ]; then
-                GROUP_NAME="${BRANCH_NAME_UNSLASHED:0:6}"."${BRANCH_NAME_UNSLASHED:(-6)}"
+            if [ "$BRANCH_NAME_UNSLASHED_LENGTH" -gt "10" ]; then
+                # Only shorten them if they are longer than 10 chars
+                BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
+                [[ $BRANCH_NAME_UNSLASHED =~ $BRANCH_NAME_REG_EX ]]
+                BASH_REMATCH_LENGTH=${#BASH_REMATCH}
+                if [ "$BASH_REMATCH_LENGTH" -gt "0" ] && [ "${ALL_GROUP_NAMES/$BASH_REMATCH}" = "$ALL_GROUP_NAMES" ]; then
+                    # Show only the JIRA ID where possible, and handle IDs used in more than 1 branch name
+                    GROUP_NAME=${BASH_REMATCH}
+                else
+                    GROUP_NAME="${BRANCH_NAME_UNSLASHED:0:6}"."${BRANCH_NAME_UNSLASHED:(-6)}"
+                fi
             else
                 GROUP_NAME="${BRANCH_NAME_UNSLASHED}"
             fi
         else
              GROUP_NAME="$BRANCH_NAME_UNSLASHED"
         fi
+        ALL_GROUP_NAMES="${ALL_GROUP_NAMES}${GROUP_NAME}"
 
         spruce merge job_list_for_this_branch.yaml > job_array_for_this_branch.yaml
         get_group_for_group_name job_array_for_this_branch.yaml $GROUP_NAME group_for_this_branch.yaml
