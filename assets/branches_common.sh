@@ -102,11 +102,15 @@ pipeline_has_correct_groups() {
     echo -e "$PARAM_CONCOURSE_USERNAME\n$PARAM_CONCOURSE_PASSWORD\n" | fly -t $LOC_CONCOURSE_TARGET login --concourse-url $PARAM_CONCOURSE_URL
 
     fly -t $LOC_CONCOURSE_TARGET get-pipeline -p $PARAM_APP_PIPELINE_NAME > current_pipeline.yaml
-    CURRENT_PIPELINE_GROUPS=$(spruce json current_pipeline.yaml | jq '.["groups"][].name' | xargs)
+    CURRENT_DYNAMIC_PIPELINE_GROUPS=$(spruce json current_pipeline.yaml | jq '.["jobs"][] | select(.name | contains("updater")).plan[2].config.params.PARAM_BRANCH_LIST' | xargs)
+    CURRENT_DYNAMIC_PIPELINE_GROUPS_UNSLASHED=`echo $CURRENT_DYNAMIC_PIPELINE_GROUPS | sed -e "s/\//-/g"`
 
     EXPECTED_PIPELINE_GROUPS_RAW="$STATIC_GROUPS"
     if [ -n "${APP_DEV_BRANCHES}" ]; then
         EXPECTED_PIPELINE_GROUPS_RAW="$STATIC_GROUPS $PARAM_APP_DEV_ALL_BRANCHES_GROUP $APP_DEV_BRANCHES"
+        CURRENT_PIPELINE_GROUPS="$STATIC_GROUPS $PARAM_APP_DEV_ALL_BRANCHES_GROUP $CURRENT_DYNAMIC_PIPELINE_GROUPS_UNSLASHED"
+    else
+        CURRENT_PIPELINE_GROUPS="$STATIC_GROUPS"
     fi
     if [ -n "${APP_HOT_BRANCHES}" ]; then
         EXPECTED_PIPELINE_GROUPS_RAW="$EXPECTED_PIPELINE_GROUPS_RAW $APP_HOT_BRANCHES"
@@ -134,6 +138,19 @@ get_group_for_group_name() {
     spruce json group_node.yaml | jq '{"groups": [.]}' | json2yaml > $OUTPUT_FILE
 }
 
+get_branch_list_into_updater_param() {
+    BRANCH_LIST=$1
+    OUTPUT_FILE=$2
+
+    printf "PARAM_BRANCH_LIST: $BRANCH_LIST" > param_branch_list_start.yaml
+    spruce json param_branch_list_start.yaml | \
+        jq '{"params":.}' | \
+        jq '{"config":.}' | \
+        jq '{"plan":[{"get" : "update-script"}, {"get" : "new-branches-watcher", trigger: true}, .]}' | \
+        jq '{"jobs":[.]}' | \
+        json2yaml > $OUTPUT_FILE
+}
+
 process_template_for_each_branch() {
     LANE_FOR_TEMPLATE_FILE=$1
     JOB_LIST_FOR_TEMPLATE_FILE=$2
@@ -142,11 +159,14 @@ process_template_for_each_branch() {
     FULL_TABS_FOR_EACH_BRANCH_FILE=$5
     JOB_LIST_FOR_ALL_BRANCHES_FILE=$6
 
+    APP_BRANCHES_LENGTH=${#APP_BRANCHES}
+
     IFS=' ' read -r -a APP_BRANCHES_ARRAY <<< "$APP_BRANCHES"
 
     FIRST_BRANCH=true
     for BRANCH_NAME in "${APP_BRANCHES_ARRAY[@]}"
     do
+        echo "Processing template for branch: $BRANCH_NAME"
         # Can't use slashes in job names
         BRANCH_NAME_UNSLASHED=`echo $BRANCH_NAME | sed -e "s/\//-/g"`
 
@@ -159,8 +179,39 @@ process_template_for_each_branch() {
         sed 's~'"$APP_TEMPLATE_GROUP"'~'"$BRANCH_NAME_UNSLASHED"'~g' $JOB_LIST_FOR_TEMPLATE_FILE > job_list_for_this_branch.yaml
         printf "\n" >> job_list_for_this_branch.yaml
 
+        if [ "$APP_BRANCHES_LENGTH" -gt "100" ]; then
+            # We need to hanle wrapping of group names
+            # 1st, shorten some common prefixes and suffixes
+            BRANCH_NAME_FOR_GROUP_1=${BRANCH_NAME_UNSLASHED/feature-/""}
+            BRANCH_NAME_FOR_GROUP_2=${BRANCH_NAME_FOR_GROUP_1/fix-/""}
+            BRANCH_NAME_FOR_GROUP=${BRANCH_NAME_FOR_GROUP_2/extraction/ext}
+            echo $BRANCH_NAME_FOR_GROUP
+            BRANCH_NAME_FOR_GROUP_LENGTH=${#BRANCH_NAME_FOR_GROUP}
+            if [ "$BRANCH_NAME_FOR_GROUP_LENGTH" -gt "13" ]; then
+                # Only shorten them if they are longer than 13 chars
+                BRANCH_NAME_REG_EX='(CORE|core|ZC|zc|JUNGLE|jungle)-*[0-9]+'
+                set +e
+                [[ $BRANCH_NAME_FOR_GROUP =~ $BRANCH_NAME_REG_EX ]]
+                set -e
+                BASH_REMATCH_LENGTH=${#BASH_REMATCH}
+                if [ "$BASH_REMATCH_LENGTH" -gt "0" ] && [ "${ALL_GROUP_NAMES/$BASH_REMATCH}" = "$ALL_GROUP_NAMES" ]; then
+                    # Show only the JIRA ID where possible, and handle IDs used in more than 1 branch name
+                    GROUP_NAME=${BASH_REMATCH}
+                else
+                    #Show just 1st 13 characters
+                    GROUP_NAME="${BRANCH_NAME_FOR_GROUP:0:13}"
+                fi
+            else
+                GROUP_NAME="${BRANCH_NAME_FOR_GROUP}"
+            fi
+        else
+             GROUP_NAME="$BRANCH_NAME_UNSLASHED"
+        fi
+        ALL_GROUP_NAMES="${ALL_GROUP_NAMES}${GROUP_NAME}"
+
         spruce merge job_list_for_this_branch.yaml > job_array_for_this_branch.yaml
-        get_group_for_group_name job_array_for_this_branch.yaml $BRANCH_NAME_UNSLASHED group_for_this_branch.yaml
+        echo "Branch lane will be placed in group: $GROUP_NAME"
+        get_group_for_group_name job_array_for_this_branch.yaml $GROUP_NAME group_for_this_branch.yaml
 
         # now add the branch pipeline to the pipeline of all branches
         if [ $FIRST_BRANCH == true ] ; then
