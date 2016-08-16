@@ -209,6 +209,9 @@ process_template_for_each_branch() {
         fi
         ALL_GROUP_NAMES="${ALL_GROUP_NAMES}${GROUP_NAME}"
 
+        # If there was a change in group name, we will need to make a change of "inprogress" build links
+        sed 's~'IP-"$BRANCH_NAME_UNSLASHED"-IP'~'"$GROUP_NAME"'~g' lane_for_this_branch.yaml > lane_for_this_branch_final.yaml
+
         spruce merge job_list_for_this_branch.yaml > job_array_for_this_branch.yaml
         echo "Branch lane will be placed in group: $GROUP_NAME"
         get_group_for_group_name job_array_for_this_branch.yaml $GROUP_NAME group_for_this_branch.yaml
@@ -217,12 +220,12 @@ process_template_for_each_branch() {
         if [ $FIRST_BRANCH == true ] ; then
             FIRST_BRANCH=false
             echo "Starting with $BRANCH_NAME_UNSLASHED"
-            spruce merge lane_for_this_branch.yaml group_for_this_branch.yaml > $FULL_TABS_FOR_EACH_BRANCH_FILE
+            spruce merge lane_for_this_branch_final.yaml group_for_this_branch.yaml > $FULL_TABS_FOR_EACH_BRANCH_FILE
             # do the same for the main group section
             spruce merge job_list_for_this_branch.yaml > $JOB_LIST_FOR_ALL_BRANCHES_FILE
         else
             echo "Adding Branch $BRANCH_NAME_UNSLASHED"
-            spruce merge $FULL_TABS_FOR_EACH_BRANCH_FILE lane_for_this_branch.yaml group_for_this_branch.yaml >> $FULL_TABS_FOR_EACH_BRANCH_FILE
+            spruce merge $FULL_TABS_FOR_EACH_BRANCH_FILE lane_for_this_branch_final.yaml group_for_this_branch.yaml >> $FULL_TABS_FOR_EACH_BRANCH_FILE
             # do the same for the main group section
             spruce merge $JOB_LIST_FOR_ALL_BRANCHES_FILE job_list_for_this_branch.yaml >> $JOB_LIST_FOR_ALL_BRANCHES_FILE
         fi
